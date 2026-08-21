@@ -1,8 +1,8 @@
 /* app.css — Alongside app layout on top of the Organic design tokens (styles.css).
    Root font-size is driven by the text-size setting (Standard 17 / Large 19 / X-large 22). */
-:root { font-size: 19px; }
+:root { font-size: 19px; --font-heading: 'Baloo 2', system-ui, sans-serif; --font-heading-weight: 700; }
 * { box-sizing: border-box; }
-html, body { margin: 0; }
+html, body { margin: 0; overflow-x: hidden; }
 body {
   background: var(--color-bg); color: var(--color-text);
   font-family: var(--font-body, 'Figtree', system-ui, sans-serif);
@@ -21,7 +21,7 @@ html[lang="ro"] { --font-heading: 'Baloo 2', system-ui, sans-serif; --font-headi
   min-height: 100vh; min-height: 100dvh; background: var(--color-bg);
   display: flex; flex-direction: column; overflow: hidden;
 }
-@media (min-width: 520px) { #frame { box-shadow: var(--shadow-lg); min-height: 96vh; margin: 2vh auto; border-radius: 28px; } }
+@media (min-width: 640px) { #frame { max-width: 640px; box-shadow: var(--shadow-lg); min-height: 96vh; margin: 2vh auto; border-radius: 12px; } }
 
 .screen { flex: 1; overflow-y: auto; padding: 20px 20px 84px; position: relative; }
 .blob { position: absolute; border-radius: 999px; filter: blur(2px); opacity: .5; pointer-events: none; z-index: 0; }
@@ -138,3 +138,7 @@ html[lang="ro"] { --font-heading: 'Baloo 2', system-ui, sans-serif; --font-headi
 .dialog-title { font-size: 1.5em; margin-bottom: 4px; }
 /* lighter, higher-contrast input fill (design surface was too close to the page) */
 .input, select.input, textarea.input { background: #fffdf7; }
+/* tighter container corners (~10-12px per request); pills/chips/inputs stay round */
+.card, .dialog { border-radius: 12px; }
+.card.itemcard, .card.summary { border-radius: 12px; }
+.mrow, .rbanner, .statebar { border-radius: 10px; }

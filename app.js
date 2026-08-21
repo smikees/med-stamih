@@ -18,6 +18,7 @@
     profiles: [], sel: null, manageSel: null,
     items: [], logs: {},           // for the currently-loaded profile+today
     editItem: null,                // item-editor dialog state
+    personDlg: null,               // family-member (profile) editor dialog state
   };
   const SIZES = { Standard: 17, Large: 19, 'Extra large': 22 };
   const t = (k) => (window.STR[state.lang] && window.STR[state.lang][k]) ?? (window.STR.en[k] ?? k);
@@ -184,12 +185,12 @@
       el('button', { class: 'btn btn-primary', onclick: () => setLog(it.id, 'taken', nowMin()), html: M.icon('check', 18, 'currentColor', 2.6) + ' ' + esc(t(isAct ? 'btnDone' : 'btnTaken')) }),
       el('button', { class: 'btn btn-secondary', onclick: () => setLog(it.id, 'skipped'), html: M.icon('x', 18, 'currentColor', 2.6) + ' ' + esc(t(isAct ? 'btnDidntDo' : 'btnDidnt')) }));
     if (l.status === 'taken') {
-      const label = l.taken_min != null ? fmt('takenAt', { time: fmtMin(l.taken_min) }) : t('takenWord');
+      const label = l.taken_min != null ? fmt(isAct ? 'doneAt' : 'takenAt', { time: fmtMin(l.taken_min) }) : t(isAct ? 'doneWord' : 'takenWord');
       return el('div', {}, el('div', { class: 'statebar sb-taken' }, el('span', { html: M.icon('check', 18, 'var(--color-accent-2-700)', 2.6) }), el('span', { style: 'flex:1' }, label),
         el('button', { class: 'btn btn-ghost small', onclick: () => setLog(it.id, null) }, t('btnChange'))),
         el('button', { class: 'linklike', onclick: (e) => editTime(it, e) }, t('editTime')));
     }
-    return el('div', { class: 'statebar sb-skip' }, el('span', { html: M.icon('x', 18, 'var(--color-accent-700)', 2.6) }), el('span', { style: 'flex:1' }, t('markedNot')),
+    return el('div', { class: 'statebar sb-skip' }, el('span', { html: M.icon('x', 18, 'var(--color-accent-700)', 2.6) }), el('span', { style: 'flex:1' }, t(isAct ? 'markedNotAct' : 'markedNot')),
       el('button', { class: 'btn btn-ghost small', onclick: () => setLog(it.id, null) }, t('btnChange')));
   }
   function editTime(it, e) {
@@ -218,7 +219,52 @@
         el('button', { class: 'btn btn-secondary btn-icon', 'aria-label': t('editPerson'), onclick: () => openEditor(it), html: M.icon('pencil', 18) }),
         el('button', { class: 'btn btn-secondary btn-icon', 'aria-label': t('removePhoto'), onclick: () => removeItem(it), html: M.icon('trash', 18) })));
     });
+    c.append(familyMembersSection());
     screen.append(c);
+  }
+  function familyMembersSection() {
+    const wrap = el('div', {});
+    wrap.append(el('h2', { class: 'display', style: 'font-size:1.2em;margin:24px 0 4px' }, t('familyMembers')),
+      el('p', { class: 'muted', style: 'font-size:.82em;margin:0 0 10px' }, t('familyNote')));
+    state.profiles.forEach((pf, i) => wrap.append(el('div', { class: 'mrow' },
+      el('span', { class: 'pavatar', style: 'background:' + tintFor(pf, i) }, (pf.name || '?').charAt(0).toUpperCase()),
+      el('div', { style: 'flex:1;min-width:0' }, el('div', { style: 'font-weight:700' }, pf.name), el('div', { class: 'muted', style: 'font-size:.82em' }, pf.relation || '')),
+      el('button', { class: 'btn btn-secondary btn-icon', 'aria-label': t('editPerson'), onclick: () => openPerson(pf), html: M.icon('pencil', 18) }),
+      (state.profiles.length > 1 && pf.role === 'owner') ? el('button', { class: 'btn btn-secondary btn-icon', 'aria-label': t('removePhoto'), onclick: () => removePerson(pf), html: M.icon('trash', 18) }) : null)));
+    wrap.append(el('button', { class: 'btn btn-secondary btn-block', style: 'margin-top:6px', onclick: () => openPerson(null), html: M.icon('plus', 18, 'currentColor', 2.6) + ' ' + esc(t('addMember')) }));
+    return wrap;
+  }
+  function openPerson(pf) { state.personDlg = pf ? { id: pf.id, name: pf.name, relation: pf.relation, timezone: pf.timezone } : { isNew: true, name: '', relation: '' }; renderPerson(); }
+  function closePerson() { state.personDlg = null; removeDialogs(); }
+  function renderPerson() {
+    removeDialogs();
+    const e = state.personDlg;
+    const bd = el('div', { class: 'dialog-backdrop', onclick: (ev) => { if (ev.target === bd) closePerson(); } });
+    const nameI = el('input', { class: 'input', value: e.name || '', placeholder: t('phPersonName') });
+    const relI = el('input', { class: 'input', value: e.relation || '', placeholder: t('phRelationship') });
+    const dc = el('div', { class: 'dialog' },
+      el('div', { class: 'dialog-title display' }, t(e.isNew ? 'personAddTitle' : 'personEditTitle')),
+      e.isNew ? el('p', { class: 'muted', style: 'font-size:.85em;margin:-2px 0 10px' }, t('personAddSub')) : null,
+      el('div', { class: 'dialog-body' },
+        el('div', { class: 'field' }, el('label', {}, t('fName')), nameI),
+        el('div', { class: 'field' }, el('label', {}, t('fRelationship')), relI)),
+      el('div', { class: 'dialog-actions' },
+        el('button', { class: 'btn btn-secondary', onclick: closePerson }, t('cancel')),
+        el('button', { class: 'btn btn-primary', onclick: async () => {
+          const name = nameI.value.trim(); if (!name) { nameI.focus(); return; }
+          const relation = relI.value.trim();
+          if (e.isNew) { const r = await api('/api/profiles.php?action=create', { method: 'POST', body: { name, relation } }); state.personDlg = null; removeDialogs(); await loadProfiles(); state.manageSel = r.id; state.sel = r.id; loadedFor = null; render(); }
+          else { await api('/api/profiles.php?action=rename', { method: 'POST', body: { id: e.id, name, relation, timezone: e.timezone || 'Europe/Bucharest' } }); state.personDlg = null; removeDialogs(); await loadProfiles(); render(); }
+        } }, t(e.isNew ? 'addPersonBtn' : 'savePersonBtn'))));
+    bd.append(dc); document.body.append(bd);
+  }
+  async function removePerson(pf) {
+    if (!window.confirm(t('removePhoto') + ' ' + pf.name + '?')) return;
+    await api('/api/profiles.php?action=delete', { method: 'POST', body: { id: pf.id } });
+    await loadProfiles();
+    if (state.manageSel === pf.id) state.manageSel = state.profiles[0] ? state.profiles[0].id : null;
+    if (state.sel === pf.id) state.sel = state.profiles[0] ? state.profiles[0].id : null;
+    loadedFor = null; render();
   }
   function recurText(it) {
     const parts = []; const f = it.freq || 'daily';

@@ -52,6 +52,13 @@ if ($action === 'share') {
     json_out(['ok' => true]);
 }
 
+if ($action === 'delete') {
+    $pid = (int)($b['id'] ?? 0);
+    require_profile($pid, 'owner');
+    pdo()->prepare('DELETE FROM profiles WHERE id=?')->execute([$pid]);   // cascades members/items/logs
+    json_out(['ok' => true]);
+}
+
 if ($action === 'unshare') {
     $pid = (int)($b['id'] ?? 0);
     require_profile($pid, 'owner');
