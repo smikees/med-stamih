@@ -74,7 +74,7 @@ html[lang="ro"] { --font-heading: 'Baloo 2', system-ui, sans-serif; --font-headi
 .pchip-av { width: 34px; height: 34px; border-radius: 999px; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: .9em; }
 
 /* summary card + ring */
-.card.summary { display: flex; align-items: center; gap: 16px; padding: 16px; border-radius: 26px; margin-bottom: 12px; }
+.card.summary { display: flex; flex-direction: row; align-items: center; gap: 16px; padding: 16px; border-radius: 26px; margin-bottom: 12px; }
 .summary .ring { flex: 0 0 auto; }
 .sum-h { font-weight: 700; font-size: 1.1em; }
 .sum-sub { font-size: .9em; margin-top: 2px; }
@@ -98,7 +98,7 @@ html[lang="ro"] { --font-heading: 'Baloo 2', system-ui, sans-serif; --font-headi
 .tag.b-soon { background: var(--color-neutral-200); color: var(--color-neutral-800); }
 
 /* item card */
-.card.itemcard { display: flex; gap: 12px; padding: 16px; border-radius: 24px; margin-bottom: 10px; }
+.card.itemcard { display: flex; flex-direction: row; align-items: flex-start; gap: 12px; padding: 16px; border-radius: 24px; margin-bottom: 10px; }
 .itc-av { width: 54px; height: 54px; border-radius: 999px; display: grid; place-items: center; flex: 0 0 auto; background-position: center; }
 .itc-av.pill { background-color: var(--color-accent-100); }
 .itc-av.act { background-color: var(--color-accent-2-100); }
@@ -112,12 +112,16 @@ html[lang="ro"] { --font-heading: 'Baloo 2', system-ui, sans-serif; --font-headi
 .statebar { display: flex; align-items: center; gap: 8px; border-radius: 14px; padding: 10px 12px; margin-top: 12px; font-weight: 600; }
 .sb-taken { background: var(--color-accent-2-100); color: var(--color-accent-2-800); }
 .sb-skip { background: var(--color-accent-100); color: var(--color-accent-800); }
+/* keep the ✓ / ✕ glyph centered against the text (svg baseline nudged) */
+.statebar > span:first-child { display: inline-flex; align-items: center; flex: 0 0 auto; }
+.statebar svg { display: block; }
 .linklike { background: none; border: 0; color: var(--color-neutral-700); text-decoration: underline; cursor: pointer; font: inherit; font-size: .82em; margin-top: 6px; padding: 2px; }
 .timeedit { margin-top: 8px; }
 
 /* manage */
 .mng-listhead { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
-.mrow { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 18px; margin-bottom: 10px; }
+.mrow { display: flex; flex-direction: row; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 18px; margin-bottom: 10px; }
+.mrow > div { text-align: left; }
 .mrow-av { width: 44px; height: 44px; border-radius: 999px; display: grid; place-items: center; flex: 0 0 auto; }
 .mrow-av.pill { background: var(--color-accent-100); } .mrow-av.act { background: var(--color-accent-2-100); }
 .empty { text-align: center; padding: 30px 10px; }
@@ -132,3 +136,5 @@ html[lang="ro"] { --font-heading: 'Baloo 2', system-ui, sans-serif; --font-headi
 .dialog-backdrop { z-index: 1000; }
 .dialog { position: relative; z-index: 1001; max-height: 90vh; overflow-y: auto; width: min(440px, 100%); }
 .dialog-title { font-size: 1.5em; margin-bottom: 4px; }
+/* lighter, higher-contrast input fill (design surface was too close to the page) */
+.input, select.input, textarea.input { background: #fffdf7; }
