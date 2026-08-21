@@ -11,13 +11,22 @@ if ($sql === false) exit("schema.sql missing\n");
 
 $pdo = pdo();
 $done = 0;
-foreach (array_filter(array_map('trim', explode(';', $sql))) as $stmt) {
-    if ($stmt === '' || str_starts_with($stmt, '--')) continue;
-    // drop leading comment lines within a statement
-    $clean = implode("\n", array_filter(explode("\n", $stmt), fn($l) => !str_starts_with(trim($l), '--')));
-    if (trim($clean) === '') continue;
-    $pdo->exec($clean);
-    $done++;
+// Strip every "-- ..." comment to end-of-line FIRST, so semicolons inside
+// comments can't break statement splitting. (No schema string contains '--'.)
+$noComments = implode("\n", array_map(function ($l) {
+    $p = strpos($l, '--');
+    return $p === false ? $l : substr($l, 0, $p);
+}, explode("\n", $sql)));
+foreach (array_filter(array_map('trim', explode(';', $noComments))) as $clean) {
+    if ($clean === '') continue;
+    try {
+        $pdo->exec($clean);
+        $done++;
+    } catch (Throwable $e) {
+        http_response_code(500);
+        echo "FAILED statement #" . ($done + 1) . ": " . $e->getMessage() . "\n\n--- SQL ---\n" . substr($clean, 0, 400) . "\n";
+        exit;
+    }
 }
 
 // seed admin accounts (Google-only, is_admin=1) from ADMIN_EMAILS
