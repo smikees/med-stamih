@@ -164,3 +164,10 @@ html[lang="ro"] { --font-heading: 'Baloo 2', system-ui, sans-serif; --font-headi
 
 /* belt-and-suspenders: no stray horizontal scroll on desktop */
 .screen { overflow-x: hidden; }
+
+/* the decorative blob is absolutely-positioned (z-index:0), which otherwise paints
+   OVER in-flow siblings — lift the interactive rows above it */
+.pswitch, .subtabs, .mng-listhead { position: relative; z-index: 1; }
+
+/* inputs at 16px stop mobile browsers from auto-zooming on focus (and read better) */
+.input, select.input, textarea.input, input, select, textarea { font-size: 16px; }
