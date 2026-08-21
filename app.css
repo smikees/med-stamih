@@ -183,7 +183,7 @@ html[lang="ro"] { --font-heading: 'Baloo 2', system-ui, sans-serif; --font-headi
 .noteedit-ta { width: 100%; resize: vertical; min-height: 46px; border-radius: 12px; }
 .card.daynote { display: block; padding: 12px 14px; margin-top: 14px; }
 .dn-label { display: flex; align-items: center; gap: 8px; font-weight: 700; margin-bottom: 8px; }
-.dn-ta { width: 100%; resize: vertical; min-height: 46px; border-radius: 12px; }
+textarea.dn-ta { width: 100%; resize: vertical; min-height: 44px; height: 44px; border-radius: 12px; }
 
 /* readability: larger + higher-contrast secondary text */
 .muted { color: var(--color-neutral-800); }
