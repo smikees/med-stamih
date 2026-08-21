@@ -205,8 +205,7 @@
   }
   function itemCard(it) {
     const l = state.logs[it.id]; const isAct = it.type === 'activity';
-    const av = state.showPhotos ? el('span', { class: 'itc-av ' + (isAct ? 'act' : 'pill'), html: it.photo ? '' : M.icon(isAct ? 'activity' : 'pill', 26, isAct ? 'var(--color-accent-2-700)' : 'var(--color-accent-700)') }) : null;
-    if (av && it.photo) av.style.backgroundImage = 'url(' + it.photo + ')', av.style.backgroundSize = 'cover', av.innerHTML = '';
+    const av = state.showPhotos ? itemAvatar(it, 'itc-av', isAct, 26) : null;
     const detail = isAct ? (it.purpose || '') : (fmt('take', { n: it.count }) + (it.purpose ? ' · ' + fmt('forPurpose', { purpose: (it.purpose || '').toLowerCase() }) : ''));
     const body = el('div', { style: 'flex:1;min-width:0' },
       el('div', { class: 'itc-top' }, el('span', { class: 'itc-name' }, it.name), el('span', { class: 'itc-time muted', html: M.icon('clock', 14, 'currentColor', 2.4) + ' ' + esc(fmtMin(it.time)) })),
@@ -255,7 +254,7 @@
         : [t('typeActivity'), t('group' + cap(it.group)), it.purpose].filter(Boolean).join(' · ');
       const rec = recurText(it);
       c.append(el('div', { class: 'mrow card' },
-        state.showPhotos ? el('span', { class: 'mrow-av ' + (it.type === 'activity' ? 'act' : 'pill'), html: it.photo ? '' : M.icon(it.type === 'activity' ? 'activity' : 'pill', 22, it.type === 'activity' ? 'var(--color-accent-2-700)' : 'var(--color-accent-700)') }) : null,
+        state.showPhotos ? itemAvatar(it, 'mrow-av', it.type === 'activity', 22) : null,
         el('div', { style: 'flex:1;min-width:0' }, el('div', { style: 'font-weight:700' }, it.name), el('div', { class: 'meta' }, meta), rec ? el('div', { class: 'rec' }, rec) : null),
         el('button', { class: 'btn btn-secondary btn-icon', 'aria-label': t('notifyNow'), title: t('notifyNow'), onclick: () => notifyNow(it), html: M.icon('bell', 18) }),
         el('button', { class: 'btn btn-secondary btn-icon', 'aria-label': t('editPerson'), onclick: () => openEditor(it), html: M.icon('pencil', 18) }),
@@ -381,6 +380,38 @@
       if (r.no_channel) toast(t('notifyNoChannel')); else toast(fmt('notifySent', { n: r.sent }));
     } catch (e) { toast(t('notifyNoChannel')); }
   }
+  function photoSrc(it) { return (it && it.photo && it.id) ? ('/media.php?item=' + it.id + '&v=' + encodeURIComponent(String(it.photo).slice(-14))) : null; }
+  function itemAvatar(it, cls, isAct, size) {
+    const src = photoSrc(it);
+    const span = el('span', { class: cls + ' ' + (isAct ? 'act' : 'pill'), html: src ? '' : M.icon(isAct ? 'activity' : 'pill', size, isAct ? 'var(--color-accent-2-700)' : 'var(--color-accent-700)') });
+    if (src) { span.style.backgroundImage = 'url(' + src + ')'; span.style.backgroundSize = 'cover'; span.style.backgroundPosition = 'center'; }
+    return span;
+  }
+  async function uploadPhoto(file, pid) {
+    const fd = new FormData(); fd.append('profile_id', pid); fd.append('file', file);
+    const r = await fetch('/media.php?action=upload', { method: 'POST', credentials: 'include', headers: { 'X-CSRF': state.csrf }, body: fd });
+    let j = null; try { j = await r.json(); } catch (e) {}
+    if (!r.ok) throw Object.assign(new Error((j && j.error) || r.status), { data: j });
+    return j;   // { photo_url }
+  }
+  function photoControl(e, pid) {
+    const wrap = el('div', { class: 'photo-pick' });
+    const fileI = el('input', { type: 'file', accept: 'image/*', style: 'display:none' });
+    const cur = e.photoPreview || photoSrc(e);
+    const prev = el('div', { class: 'photo-prev' + (cur ? '' : ' empty') });
+    if (cur) { prev.style.backgroundImage = 'url(' + cur + ')'; } else { prev.textContent = '📷'; }
+    prev.onclick = () => fileI.click();
+    fileI.addEventListener('change', async () => {
+      const f = fileI.files[0]; if (!f) return;
+      const rd = new FileReader(); rd.onload = () => { e.photoPreview = rd.result; renderEditor(); }; rd.readAsDataURL(f);
+      try { const r = await uploadPhoto(f, pid); e.photo = r.photo_url; } catch (err) { e.photoPreview = null; toast(t('photoError')); renderEditor(); }
+    });
+    const btns = el('div', { class: 'photo-btns' },
+      el('button', { class: 'btn btn-secondary', type: 'button', onclick: () => fileI.click() }, t(cur ? 'changePhoto' : 'addPhoto')),
+      cur ? el('button', { class: 'btn btn-secondary', type: 'button', onclick: () => { e.photo = null; e.photoPreview = null; renderEditor(); } }, t('removePhoto')) : null);
+    wrap.append(prev, fileI, btns);
+    return wrap;
+  }
   let toastT = null;
   function toast(msg) {
     document.querySelectorAll('.toast').forEach(n => n.remove());
@@ -407,10 +438,17 @@
     const timeS = el('select', { class: 'input' }); for (let m = 0; m < 1440; m += 30) timeS.append(el('option', { value: m, selected: Math.abs(e.time - m) < 15 ? 'selected' : null }, fmtMin(m)));
     const repeatS = sel(['daily', 'weekly', 'monthly'], [t('repDaily'), t('repWeekly'), t('repMonthly')], e.freq, v => { e.freq = v; renderEditor(); });
     const purposeI = input(e.purpose, 'phFor'); const noteI = input(e.note, 'phNote');
+    // keep edits in state so a re-render (repeat change, photo pick) never drops them
+    nameI.addEventListener('input', () => e.name = nameI.value);
+    countI.addEventListener('input', () => e.count = Math.max(1, parseInt(countI.value, 10) || 1));
+    purposeI.addEventListener('input', () => e.purpose = purposeI.value);
+    noteI.addEventListener('input', () => e.note = noteI.value);
+    timeS.addEventListener('change', () => e.time = parseInt(timeS.value, 10));
     const dc = el('div', { class: 'dialog' },
       el('div', { class: 'dialog-title display' }, t(e.isNew ? 'editAdd' : 'editEdit')),
       el('div', { class: 'dialog-body' },
         field('fName', nameI),
+        field('fPhoto', photoControl(e, pid)),
         el('div', { class: 'grid2' }, field('fType', typeS), field('fHowMany', countI)),
         el('div', { class: 'grid2' }, field('fWhen', whenS), field('fTime', timeS)),
         field('fRepeat', repeatS),
