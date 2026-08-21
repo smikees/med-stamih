@@ -4,6 +4,7 @@
 (() => {
   const $ = (s, r = document) => r.querySelector(s);
   const el = (t, a = {}, ...k) => { const n = document.createElement(t); for (const [x, v] of Object.entries(a)) { if (v == null) continue; if (x === 'class') n.className = v; else if (x === 'html') n.innerHTML = v; else if (x.startsWith('on')) n.addEventListener(x.slice(2), v); else n.setAttribute(x, v); } for (const c of k.flat()) if (c != null) n.append(c.nodeType ? c : document.createTextNode(c)); return n; };
+  const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const M = window.MED;
   const TINTS = ['var(--color-accent-500)', 'var(--color-accent-2-500)', 'var(--color-accent-600)', 'var(--color-accent-2-600)', 'var(--color-accent-400)'];
 
@@ -162,7 +163,7 @@
     return el('div', { class: 'sec-head' },
       el('span', { class: 'sec-ico', html: M.icon(GNAME[g.key], 20, 'var(--color-accent-2-700)') }),
       el('div', { style: 'flex:1' }, el('span', { class: 'sec-title display' }, t(g.label)),
-        el('div', { class: 'sec-rem muted' }, M.icon('bell', 13, 'currentColor', 2.4) + ' ' + fmt('reminderWord', { time: fmtMin(its[0].time) }))),
+        el('div', { class: 'sec-rem muted', html: M.icon('bell', 13, 'currentColor', 2.4) + ' ' + fmt('reminderWord', { time: fmtMin(its[0].time) }) })),
       el('span', { class: 'tag ' + badge[1] }, t(badge[0])));
   }
   function itemCard(it) {
@@ -171,7 +172,7 @@
     if (av && it.photo) av.style.backgroundImage = 'url(' + it.photo + ')', av.style.backgroundSize = 'cover', av.innerHTML = '';
     const detail = isAct ? (it.purpose || '') : (fmt('take', { n: it.count }) + (it.purpose ? ' · ' + fmt('forPurpose', { purpose: (it.purpose || '').toLowerCase() }) : ''));
     const body = el('div', { style: 'flex:1;min-width:0' },
-      el('div', { class: 'itc-top' }, el('span', { class: 'itc-name' }, it.name), el('span', { class: 'itc-time muted' }, M.icon('clock', 14, 'currentColor', 2.4) + ' ' + fmtMin(it.time))),
+      el('div', { class: 'itc-top' }, el('span', { class: 'itc-name' }, it.name), el('span', { class: 'itc-time muted', html: M.icon('clock', 14, 'currentColor', 2.4) + ' ' + esc(fmtMin(it.time)) })),
       detail ? el('div', { class: 'itc-detail muted' }, detail) : null,
       it.note ? el('span', { class: 'itc-note' }, it.note) : null,
       actionZone(it, l, isAct));
@@ -179,8 +180,8 @@
   }
   function actionZone(it, l, isAct) {
     if (!l) return el('div', { class: 'itc-actions' },
-      el('button', { class: 'btn btn-primary', onclick: () => setLog(it.id, 'taken', nowMin()) }, M.icon('check', 18, 'currentColor', 2.6) + ' ' + t(isAct ? 'btnDone' : 'btnTaken')),
-      el('button', { class: 'btn btn-secondary', onclick: () => setLog(it.id, 'skipped') }, M.icon('x', 18, 'currentColor', 2.6) + ' ' + t(isAct ? 'btnDidntDo' : 'btnDidnt')));
+      el('button', { class: 'btn btn-primary', onclick: () => setLog(it.id, 'taken', nowMin()), html: M.icon('check', 18, 'currentColor', 2.6) + ' ' + esc(t(isAct ? 'btnDone' : 'btnTaken')) }),
+      el('button', { class: 'btn btn-secondary', onclick: () => setLog(it.id, 'skipped'), html: M.icon('x', 18, 'currentColor', 2.6) + ' ' + esc(t(isAct ? 'btnDidntDo' : 'btnDidnt')) }));
     if (l.status === 'taken') {
       const label = l.taken_min != null ? fmt('takenAt', { time: fmtMin(l.taken_min) }) : t('takenWord');
       return el('div', {}, el('div', { class: 'statebar sb-taken' }, el('span', { html: M.icon('check', 18, 'var(--color-accent-2-700)', 2.6) }), el('span', { style: 'flex:1' }, label),
@@ -204,7 +205,7 @@
     screen.append(switcher('manageSel'));
     const c = el('div', { class: 'content' });
     c.append(el('div', { class: 'mng-listhead' }, el('h2', { class: 'display', style: 'font-size:1.25em' }, fmt('listOf', { name: personName(p) })),
-      el('button', { class: 'btn btn-primary', onclick: () => openEditor(null) }, M.icon('plus', 18, 'currentColor', 2.6) + ' ' + t('addBtn'))));
+      el('button', { class: 'btn btn-primary', onclick: () => openEditor(null), html: M.icon('plus', 18, 'currentColor', 2.6) + ' ' + esc(t('addBtn')) })));
     if (!state.items.length) c.append(el('p', { class: 'soon' }, fmt('noList', { name: personName(p) })));
     state.items.slice().sort((a, b) => (a.group + a.time) < (b.group + b.time) ? -1 : 1).forEach(it => {
       const meta = it.type === 'pill' ? [fmt('take', { n: it.count }), t('group' + cap(it.group)), it.purpose].filter(Boolean).join(' · ')
