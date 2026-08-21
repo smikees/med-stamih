@@ -122,3 +122,6 @@ CREATE TABLE IF NOT EXISTS notif_log (
 
 -- 'snooze' recorded on the due row when the user taps Amână (idempotent to re-run).
 ALTER TABLE notif_log MODIFY response ENUM('taken','skipped','snooze') DEFAULT NULL;
+
+-- allow fractional doses (0.25 = a quarter, 0.5 = a half); idempotent to re-run.
+ALTER TABLE items MODIFY count DECIMAL(4,2) NOT NULL DEFAULT 1;

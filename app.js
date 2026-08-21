@@ -33,6 +33,22 @@
   const fmtMin = (m) => M.fmtMin(m, state.lang);
   const isoToDMY = (iso) => (iso && /^\d{4}-\d{2}-\d{2}$/.test(iso)) ? iso.split('-').reverse().join('/') : '';
   function dmyToIso(s) { const m = String(s).trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); if (!m) return null; const d = +m[1], mo = +m[2], y = +m[3]; if (mo < 1 || mo > 12 || d < 1 || d > 31) return null; return y + '-' + String(mo).padStart(2, '0') + '-' + String(d).padStart(2, '0'); }
+  // fractional doses: only 1/4 (0.25) and 1/2 (0.5) besides whole numbers
+  function parseQty(s) { s = String(s).trim().replace(',', '.').replace('¼', '1/4').replace('½', '1/2'); if (s === '1/4') return 0.25; if (s === '1/2') return 0.5; const f = parseFloat(s); if (f === 0.25 || f === 0.5) return f; return Math.max(1, Math.round(f) || 1); }
+  function qtyToStr(n) { return n === 0.25 ? '1/4' : n === 0.5 ? '1/2' : String(n); }
+  function qtyLabel(n) { return n === 0.25 ? t('qtrWord') : n === 0.5 ? t('halfWord') : n; }
+  // Romanian genitive for "Ziua {name}": female -a names → -ei (Mariana→Marianei); else "lui {name}"
+  function roGenitive(name) {
+    const n = (name || '').trim(); if (!n) return n; const low = n.toLowerCase();
+    const maleA = ['luca', 'toma', 'mircea', 'ilie', 'nica', 'horia', 'barbu', 'costica', 'gica', 'aurica', 'vasilica'];
+    if (/a$/.test(low) && !maleA.includes(low)) {
+      if (/ca$/.test(low)) return n.slice(0, -2) + 'căi';   // Anca→Ancăi
+      if (/ga$/.test(low)) return n.slice(0, -2) + 'găi';   // Olga→Olgăi
+      return n.slice(0, -1) + 'ei';                          // Mariana→Marianei, Maria→Mariei, Ana→Anei
+    }
+    return 'lui ' + n;                                       // male / indeclinable
+  }
+  function pGen(name) { return state.lang === 'ro' ? roGenitive(name) : name; }
   function applyPrefs() {
     const root = SIZES[state.textSize] || 19;
     document.documentElement.style.fontSize = root + 'px';                 // scales rem
@@ -135,7 +151,7 @@
   function renderSkeleton(screen) {
     const isManage = state.tab === 'manage';
     const p = state.profiles.find(x => x.id === (isManage ? state.manageSel : state.sel));
-    head(screen, isManage ? t('mngKicker') : greeting(), isManage ? t('mngTitle') : fmt('daysTitle', { name: personName(p) }));
+    head(screen, isManage ? t('mngKicker') : greeting(), isManage ? t('mngTitle') : fmt('daysTitle', { name: pGen(personName(p)) }));
     screen.append(switcher(isManage ? 'manageSel' : 'sel'));
     const c = el('div', { class: 'content' });
     c.append(el('div', { class: 'sk sk-card', style: 'height:92px' }));
@@ -147,12 +163,12 @@
   function scheduledToday(items) { const d = new Date(); return items.filter(it => M.isScheduledOn(it, d)); }
   function renderToday(screen) {
     const p = cur();
-    head(screen, greeting() + ' · ' + new Date().toLocaleDateString(state.lang === 'ro' ? 'ro-RO' : 'en-GB', { weekday: 'short', day: 'numeric', month: 'short' }), fmt('daysTitle', { name: personName(p) }));
+    head(screen, greeting() + ' · ' + new Date().toLocaleDateString(state.lang === 'ro' ? 'ro-RO' : 'en-GB', { weekday: 'short', day: 'numeric', month: 'short' }), fmt('daysTitle', { name: pGen(personName(p)) }));
     const c = el('div', { class: 'content' });
     screen.append(switcher('sel'));
     const all = scheduledToday(state.items);
     if (!state.items.length) {
-      c.append(el('div', { class: 'empty' }, el('p', {}, fmt('noList', { name: personName(p) })),
+      c.append(el('div', { class: 'empty' }, el('p', {}, fmt('noList', { name: pGen(personName(p)) })),
         el('button', { class: 'btn btn-primary', onclick: () => openEditor(null) }, t('addFirst'))));
       screen.append(c); return;
     }
@@ -210,7 +226,7 @@
   function itemCard(it) {
     const l = state.logs[it.id]; const isAct = it.type === 'activity';
     const av = state.showPhotos ? itemAvatar(it, 'itc-av', isAct, 26) : null;
-    const detail = isAct ? (it.purpose || '') : (fmt('take', { n: it.count }) + (it.purpose ? ' · ' + fmt('forPurpose', { purpose: (it.purpose || '').toLowerCase() }) : ''));
+    const detail = isAct ? (it.purpose || '') : (fmt('take', { n: qtyLabel(it.count) }) + (it.purpose ? ' · ' + fmt('forPurpose', { purpose: (it.purpose || '').toLowerCase() }) : ''));
     const body = el('div', { style: 'flex:1;min-width:0' },
       el('div', { class: 'itc-top' }, el('span', { class: 'itc-name' }, it.name), el('span', { class: 'itc-time muted', html: M.icon('clock', 14, 'currentColor', 2.4) + ' ' + esc(fmtMin(it.time)) })),
       detail ? el('div', { class: 'itc-detail muted' }, detail) : null,
@@ -277,11 +293,11 @@
     head(screen, t('mngKicker'), t('mngTitle'));
     screen.append(manageSubtabs(), switcher('manageSel'));
     const c = el('div', { class: 'content' });
-    c.append(el('div', { class: 'mng-listhead' }, el('h2', { class: 'display', style: 'font-size:1.25em' }, fmt('listOf', { name: personName(p) })),
+    c.append(el('div', { class: 'mng-listhead' }, el('h2', { class: 'display', style: 'font-size:1.25em' }, fmt('listOf', { name: pGen(personName(p)) })),
       el('button', { class: 'btn btn-primary', onclick: () => openEditor(null), html: M.icon('plus', 18, 'currentColor', 2.6) + ' ' + esc(t('addBtn')) })));
-    if (!state.items.length) c.append(el('p', { class: 'soon' }, fmt('noList', { name: personName(p) })));
+    if (!state.items.length) c.append(el('p', { class: 'soon' }, fmt('noList', { name: pGen(personName(p)) })));
     state.items.slice().sort((a, b) => (a.group + a.time) < (b.group + b.time) ? -1 : 1).forEach(it => {
-      const meta = it.type === 'pill' ? [fmt('take', { n: it.count }), t('group' + cap(M.groupForMin(it.time))), it.purpose].filter(Boolean).join(' · ')
+      const meta = it.type === 'pill' ? [fmt('take', { n: qtyLabel(it.count) }), t('group' + cap(M.groupForMin(it.time))), it.purpose].filter(Boolean).join(' · ')
         : [t('typeActivity'), t('group' + cap(M.groupForMin(it.time))), it.purpose].filter(Boolean).join(' · ');
       const rec = recurText(it);
       c.append(el('div', { class: 'mrow card' },
@@ -512,13 +528,13 @@
     const input = (val, ph) => el('input', { class: 'input', value: val ?? '', placeholder: ph ? t(ph) : null });
     const nameI = input(e.name, 'phName');
     const typeS = sel(['pill', 'activity'], [t('typeMedicine'), t('typeActivity')], e.type, v => { e.type = v; });
-    const countI = el('input', { class: 'input', type: 'number', min: 1, value: e.count });
+    const countI = el('input', { class: 'input', inputmode: 'text', value: qtyToStr(e.count), placeholder: '1' });
     const timeS = el('select', { class: 'input' }); for (let m = 0; m < 1440; m += 30) timeS.append(el('option', { value: m, selected: Math.abs(e.time - m) < 15 ? 'selected' : null }, fmtMin(m)));
     const repeatS = sel(['daily', 'weekly', 'monthly'], [t('repDaily'), t('repWeekly'), t('repMonthly')], e.freq, v => { e.freq = v; renderEditor(); });
     const purposeI = input(e.purpose, 'phFor'); const noteI = input(e.note, 'phNote');
     // keep edits in state so a re-render (repeat change, photo pick) never drops them
     nameI.addEventListener('input', () => e.name = nameI.value);
-    countI.addEventListener('input', () => e.count = Math.max(1, parseInt(countI.value, 10) || 1));
+    countI.addEventListener('input', () => e.count = parseQty(countI.value));
     purposeI.addEventListener('input', () => e.purpose = purposeI.value);
     noteI.addEventListener('input', () => e.note = noteI.value);
     timeS.addEventListener('change', () => e.time = parseInt(timeS.value, 10));
@@ -527,7 +543,7 @@
       el('div', { class: 'dialog-body' },
         field('fName', nameI),
         field('fPhoto', photoControl(e, pid)),
-        el('div', { class: 'grid2' }, field('fType', typeS), field('fHowMany', countI)),
+        el('div', { class: 'grid2' }, field('fType', typeS), el('div', { class: 'field' }, el('label', {}, t('fHowMany')), countI, el('div', { class: 'field-hint muted' }, t('qtyHint')))),
         field('fTime', timeS),
         field('fRepeat', repeatS),
         e.freq === 'weekly' ? field('fDays', dayToggles(e)) : null,
@@ -540,7 +556,7 @@
         el('button', { class: 'btn btn-secondary', onclick: closeDialog }, t('cancel')),
         el('button', { class: 'btn btn-primary', onclick: async () => {
           e.name = nameI.value.trim(); if (!e.name) { nameI.focus(); return; }
-          e.count = Math.max(1, parseInt(countI.value, 10) || 1); e.time = parseInt(timeS.value, 10);
+          e.count = parseQty(countI.value); e.time = parseInt(timeS.value, 10);
           const body = { profile_id: pid, type: e.type, name: e.name, count: e.count, grp: M.groupForMin(e.time), time_min: e.time,
             purpose: purposeI.value.trim(), note: noteI.value.trim(), freq: e.freq, days: e.days, dom: e.dom,
             end_mode: e.endMode, end_date: e.endDate, end_count: e.endCount, photo_url: e.photo };
@@ -622,7 +638,7 @@
     if (c && c.from <= neededFrom && histLoadedKey === key) { renderHistory(screen); return; }
     if (c && c.from <= neededFrom) { histLoadedKey = key; renderHistory(screen); return; }
     histLoadedKey = key;
-    head(screen, t('histKicker'), fmt('weekTitle', { name: personName(cur()) }));
+    head(screen, t('histKicker'), fmt('weekTitle', { name: pGen(personName(cur())) }));
     screen.append(switcher('sel'));
     const sk = el('div', { class: 'content' }); sk.append(el('div', { class: 'sk', style: 'height:70px' }), el('div', { class: 'sk', style: 'height:230px' })); screen.append(sk);
     loadHist(pid, neededFrom).then(() => { if (histLoadedKey === key) render(); });
@@ -631,7 +647,7 @@
   function renderHistory(screen) {
     const pid = state.sel; const items = (histCache[pid] && histCache[pid].items) || [];
     const dates = weekDatesISO(state.weekOffset); const today = todayISO();
-    head(screen, t('histKicker'), fmt('weekTitle', { name: personName(cur()) }));
+    head(screen, t('histKicker'), fmt('weekTitle', { name: pGen(personName(cur())) }));
     screen.append(switcher('sel'));
     const c = el('div', { class: 'content' });
     // stats over the week (days up to today)

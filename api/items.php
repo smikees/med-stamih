@@ -13,7 +13,7 @@ function item_row(int $id): ?array {
 function shape(array $r): array {
     return [
         'id' => (int)$r['id'], 'profile_id' => (int)$r['profile_id'], 'type' => $r['type'],
-        'name' => $r['name'], 'count' => (int)$r['count'], 'grp' => $r['grp'], 'time_min' => (int)$r['time_min'],
+        'name' => $r['name'], 'count' => (($c = (float)$r['count']) == floor($c) ? (int)$c : $c), 'grp' => $r['grp'], 'time_min' => (int)$r['time_min'],
         'purpose' => $r['purpose'], 'note' => $r['note'], 'photo_url' => $r['photo_url'],
         'freq' => $r['freq'], 'days' => $r['days'] ? json_decode($r['days'], true) : [],
         'dom' => $r['dom'] !== null ? (int)$r['dom'] : null,
@@ -29,7 +29,7 @@ function clean(array $b): array {
     $days = array_values(array_filter(array_map('intval', is_array($b['days'] ?? null) ? $b['days'] : []), fn($d) => $d >= 0 && $d <= 6));
     return [
         'type' => $type, 'name' => mb_substr(trim($b['name'] ?? ''), 0, 200),
-        'count' => max(1, (int)($b['count'] ?? 1)), 'grp' => $grp,
+        'count' => (function ($v) { $f = (float)$v; return ($f == 0.25 || $f == 0.5) ? $f : max(1, (int)round($f)); })($b['count'] ?? 1), 'grp' => $grp,
         'time_min' => max(0, min(1439, (int)($b['time_min'] ?? 480))),
         'purpose' => mb_substr(trim($b['purpose'] ?? ''), 0, 200) ?: null,
         'note' => mb_substr(trim($b['note'] ?? ''), 0, 300) ?: null,
