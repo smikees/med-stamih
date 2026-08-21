@@ -4,6 +4,7 @@
    profile's verified Telegram channels; idempotent via notif_log. */
 require_once __DIR__ . '/../tg.php';
 require_once __DIR__ . '/../sched.php';
+require_once __DIR__ . '/../remind.php';
 header('Content-Type: text/plain; charset=utf-8');
 
 $cli = php_sapi_name() === 'cli';
@@ -18,22 +19,7 @@ function record_notif(PDO $pdo, int $pid, int $iid, string $date, string $kind) 
     $pdo->prepare('INSERT INTO notif_log (profile_id,item_id,d,kind) VALUES (?,?,?,?)
                    ON DUPLICATE KEY UPDATE sent_at=NOW(), response=NULL')->execute([$pid, $iid, $date, $kind]);
 }
-function send_reminder(array $chats, array $p, array $it, string $date, string $kind) {
-    $isAct = $it['type'] === 'activity';
-    $emoji = $kind === 'overdue' ? '⚠️' : '⏰';
-    $head = $kind === 'overdue' ? 'Întârziat: ' : '';
-    $extra = (!$isAct && (int)$it['count'] > 1) ? ' (×' . (int)$it['count'] . ')' : '';
-    $txt = $emoji . ' <b>' . htmlspecialchars($p['name']) . "</b>\n" . $head . htmlspecialchars($it['name']) . $extra . ' · ' . fmtmin_ro((int)$it['time_min']);
-    $cb = 'L|' . $p['id'] . '|' . $it['id'] . '|' . $date . '|';
-    $buttons = [
-        [['text' => $isAct ? '✅ Am făcut' : '✅ Am luat', 'callback_data' => $cb . 't'],
-         ['text' => $isAct ? '❌ Nu am făcut' : '❌ Nu am luat', 'callback_data' => $cb . 's']],
-        [['text' => '⏰ Amână', 'callback_data' => $cb . 'z']],
-    ];
-    foreach ($chats as $c) tg_send($c, $txt, $buttons);
-}
-
-$profs = $pdo->query('SELECT DISTINCT p.id,p.name,p.timezone FROM profiles p
+$profs =$pdo->query('SELECT DISTINCT p.id,p.name,p.timezone FROM profiles p
                       JOIN channels c ON c.profile_id=p.id WHERE c.kind="telegram" AND c.verified=1')->fetchAll();
 $sent = 0;
 foreach ($profs as $p) {
@@ -60,11 +46,11 @@ foreach ($profs as $p) {
         $snoozeActive = $due && $due['response'] === 'snooze' && (time() - $due['ts'] < 15 * 60);
         $snoozeExpired = $due && $due['response'] === 'snooze' && (time() - $due['ts'] >= 15 * 60);
         if ($nowMin >= $tm && !$snoozeActive && (!$due || $snoozeExpired)) {
-            send_reminder($chats, $p, $it, $dateISO, 'due'); record_notif($pdo, $pid, $iid, $dateISO, 'due'); $sent++;
+            send_item_reminder($chats, $p, $it, $dateISO, 'due'); record_notif($pdo, $pid, $iid, $dateISO, 'due'); $sent++;
             continue;
         }
         if ($due && !$snoozeActive && $nowMin >= $tm + GRACE && !isset($notif['overdue|' . $iid])) {
-            send_reminder($chats, $p, $it, $dateISO, 'overdue'); record_notif($pdo, $pid, $iid, $dateISO, 'overdue'); $sent++;
+            send_item_reminder($chats, $p, $it, $dateISO, 'overdue'); record_notif($pdo, $pid, $iid, $dateISO, 'overdue'); $sent++;
         }
     }
 

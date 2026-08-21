@@ -15,9 +15,17 @@ if (isset($update['message']['text'])) {
     if (strpos($text, '/start') === 0) {
         $tok = trim(substr($text, 6));
         if ($tok === '') { tg_send($chat, "👋 <b>Alongside</b>\nDeschide aplicația → Setări/Gestionare → Notificări și apasă „Leagă Telegram”."); exit; }
-        $st = $pdo->prepare('SELECT c.id, p.name pname FROM channels c JOIN profiles p ON p.id=c.profile_id WHERE c.link_token=? AND c.kind="telegram" LIMIT 1');
+        $st = $pdo->prepare('SELECT c.id, c.profile_id, p.name pname FROM channels c JOIN profiles p ON p.id=c.profile_id WHERE c.link_token=? AND c.kind="telegram" LIMIT 1');
         $st->execute([$tok]); $ch = $st->fetch();
         if (!$ch) { tg_send($chat, "Linkul a expirat. Deschide din nou „Leagă Telegram” în aplicație."); exit; }
+        // dedupe: this chat already linked to this profile → drop the new pending row
+        $dup = $pdo->prepare('SELECT id FROM channels WHERE profile_id=? AND kind="telegram" AND verified=1 AND address=? AND id<>? LIMIT 1');
+        $dup->execute([$ch['profile_id'], (string)$chat, $ch['id']]);
+        if ($dup->fetch()) {
+            $pdo->prepare('DELETE FROM channels WHERE id=?')->execute([$ch['id']]);
+            tg_send($chat, "ℹ️ Acest cont este deja legat pentru <b>" . htmlspecialchars($ch['pname']) . "</b>.");
+            exit;
+        }
         $pdo->prepare('UPDATE channels SET address=?, verified=1, link_token=NULL, label=? WHERE id=?')
             ->execute([(string)$chat, ($from['first_name'] ?? 'Telegram'), $ch['id']]);
         tg_send($chat, "✅ Gata! Vei primi memento pentru <b>" . htmlspecialchars($ch['pname']) . "</b> aici.");

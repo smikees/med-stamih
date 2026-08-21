@@ -257,6 +257,7 @@
       c.append(el('div', { class: 'mrow card' },
         state.showPhotos ? el('span', { class: 'mrow-av ' + (it.type === 'activity' ? 'act' : 'pill'), html: it.photo ? '' : M.icon(it.type === 'activity' ? 'activity' : 'pill', 22, it.type === 'activity' ? 'var(--color-accent-2-700)' : 'var(--color-accent-700)') }) : null,
         el('div', { style: 'flex:1;min-width:0' }, el('div', { style: 'font-weight:700' }, it.name), el('div', { class: 'meta' }, meta), rec ? el('div', { class: 'rec' }, rec) : null),
+        el('button', { class: 'btn btn-secondary btn-icon', 'aria-label': t('notifyNow'), title: t('notifyNow'), onclick: () => notifyNow(it), html: M.icon('bell', 18) }),
         el('button', { class: 'btn btn-secondary btn-icon', 'aria-label': t('editPerson'), onclick: () => openEditor(it), html: M.icon('pencil', 18) }),
         el('button', { class: 'btn btn-secondary btn-icon', 'aria-label': t('removePhoto'), onclick: () => removeItem(it), html: M.icon('trash', 18) })));
     });
@@ -316,20 +317,37 @@
     wrap.append(el('button', { class: 'btn btn-secondary btn-block', style: 'margin-top:6px', onclick: () => openPerson(null), html: M.icon('plus', 18, 'currentColor', 2.6) + ' ' + esc(t('addMember')) }));
     return wrap;
   }
-  function openPerson(pf) { state.personDlg = pf ? { id: pf.id, name: pf.name, relation: pf.relation, timezone: pf.timezone } : { isNew: true, name: '', relation: '' }; renderPerson(); }
+  function openPerson(pf) { state.personDlg = pf ? { id: pf.id, name: pf.name, relation: pf.relation, timezone: pf.timezone, role: pf.role, members: undefined } : { isNew: true, name: '', relation: '' }; if (pf && pf.role === 'owner') loadMembers(pf.id); renderPerson(); }
   function closePerson() { state.personDlg = null; removeDialogs(); }
+  async function loadMembers(pid) { try { const r = await api('/api/profiles.php?action=members&profile=' + pid); if (state.personDlg && state.personDlg.id === pid) { state.personDlg.members = r.members || []; renderPerson(); } } catch (e) { if (state.personDlg && state.personDlg.id === pid) { state.personDlg.members = []; renderPerson(); } } }
+  async function shareAdd(email) { email = (email || '').trim().toLowerCase(); if (!email) return; try { await api('/api/profiles.php?action=share', { method: 'POST', body: { id: state.personDlg.id, email } }); toast(t('shareAdded')); await loadMembers(state.personDlg.id); } catch (e) { toast(t('shareNoUser')); } }
+  async function shareRemove(email) { try { await api('/api/profiles.php?action=unshare', { method: 'POST', body: { id: state.personDlg.id, email } }); } catch (e) {} await loadMembers(state.personDlg.id); }
+  function shareSection(e) {
+    const wrap = el('div', { class: 'field', style: 'margin-top:4px' },
+      el('label', {}, t('shareTitle')),
+      el('p', { class: 'muted', style: 'font-size:.82em;margin:2px 0 8px' }, t('shareNote')));
+    if (e.members === undefined) { wrap.append(el('div', { class: 'sk', style: 'height:40px' })); return wrap; }
+    e.members.forEach(m => wrap.append(el('div', { class: 'mrow', style: 'margin-bottom:6px' },
+      el('div', { style: 'flex:1;min-width:0' }, el('div', { style: 'font-weight:700' }, m.name || m.email), el('div', { class: 'meta' }, (m.role === 'owner' ? t('ownerWord') : t('editorWord')) + (m.name ? ' · ' + m.email : ''))),
+      m.role === 'owner' ? null : el('button', { class: 'btn btn-secondary btn-icon', 'aria-label': t('unlinkWord'), onclick: () => shareRemove(m.email), html: M.icon('trash', 18) }))));
+    const emailI = el('input', { class: 'input', type: 'email', placeholder: t('shareEmailPh'), style: 'flex:1', oninput: (ev) => { e._shareEmail = ev.target.value; }, value: e._shareEmail || '' });
+    wrap.append(el('div', { style: 'display:flex;gap:8px;margin-top:4px' }, emailI,
+      el('button', { class: 'btn btn-secondary', onclick: () => { const v = emailI.value; e._shareEmail = ''; shareAdd(v); } }, t('shareAdd'))));
+    return wrap;
+  }
   function renderPerson() {
     removeDialogs();
     const e = state.personDlg;
     const bd = el('div', { class: 'dialog-backdrop', onclick: (ev) => { if (ev.target === bd) closePerson(); } });
-    const nameI = el('input', { class: 'input', value: e.name || '', placeholder: t('phPersonName') });
-    const relI = el('input', { class: 'input', value: e.relation || '', placeholder: t('phRelationship') });
+    const nameI = el('input', { class: 'input', value: e.name || '', placeholder: t('phPersonName'), oninput: (ev) => { e.name = ev.target.value; } });
+    const relI = el('input', { class: 'input', value: e.relation || '', placeholder: t('phRelationship'), oninput: (ev) => { e.relation = ev.target.value; } });
     const dc = el('div', { class: 'dialog' },
       el('div', { class: 'dialog-title display' }, t(e.isNew ? 'personAddTitle' : 'personEditTitle')),
       e.isNew ? el('p', { class: 'muted', style: 'font-size:.85em;margin:-2px 0 10px' }, t('personAddSub')) : null,
       el('div', { class: 'dialog-body' },
         el('div', { class: 'field' }, el('label', {}, t('fName')), nameI),
-        el('div', { class: 'field' }, el('label', {}, t('fRelationship')), relI)),
+        el('div', { class: 'field' }, el('label', {}, t('fRelationship')), relI),
+        (!e.isNew && e.role === 'owner') ? shareSection(e) : null),
       el('div', { class: 'dialog-actions' },
         el('button', { class: 'btn btn-secondary', onclick: closePerson }, t('cancel')),
         el('button', { class: 'btn btn-primary', onclick: async () => {
@@ -357,6 +375,19 @@
     return parts.join(' · ');
   }
   async function removeItem(it) { await api('/api/items.php?action=delete', { method: 'POST', body: { id: it.id } }); await loadDay(state.manageSel); render(); }
+  async function notifyNow(it) {
+    try {
+      const r = await api('/api/notify.php', { method: 'POST', body: { profile_id: state.manageSel, item_id: it.id } });
+      if (r.no_channel) toast(t('notifyNoChannel')); else toast(fmt('notifySent', { n: r.sent }));
+    } catch (e) { toast(t('notifyNoChannel')); }
+  }
+  let toastT = null;
+  function toast(msg) {
+    document.querySelectorAll('.toast').forEach(n => n.remove());
+    const n = el('div', { class: 'toast' }, msg); document.body.append(n);
+    requestAnimationFrame(() => n.classList.add('show'));
+    clearTimeout(toastT); toastT = setTimeout(() => { n.classList.remove('show'); setTimeout(() => n.remove(), 300); }, 2400);
+  }
 
   /* ---------------- Item editor dialog ---------------- */
   function openEditor(it) {

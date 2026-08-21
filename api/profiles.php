@@ -18,6 +18,14 @@ if ($method === 'GET' && $action === 'list') {
     json_out(['profiles' => $out]);
 }
 
+if ($method === 'GET' && $action === 'members') {
+    $pid = (int)($_GET['profile'] ?? 0);
+    require_profile($pid, 'owner');
+    $st = pdo()->prepare('SELECT u.email, u.name, pm.role FROM profile_members pm JOIN users u ON u.id=pm.user_id WHERE pm.profile_id=? ORDER BY pm.role="owner" DESC, u.email');
+    $st->execute([$pid]);
+    json_out(['members' => array_map(fn($m) => ['email' => $m['email'], 'name' => $m['name'], 'role' => $m['role']], $st->fetchAll())]);
+}
+
 if ($method !== 'POST') fail('method', 405);
 require_csrf();
 $b = body_json();
