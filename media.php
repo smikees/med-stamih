@@ -44,7 +44,7 @@ if ($method === 'POST' && ($_GET['action'] ?? '') === 'upload') {
         elseif ($o == 8) $img = imagerotate($img, 90, 0);
     }
     $w = imagesx($img); $h = imagesy($img); $mx = max($w, $h);
-    $scale = $mx > 1024 ? 1024 / $mx : 1.0;
+    $scale = $mx > 1600 ? 1600 / $mx : 1.0;   // keep enough detail to read a label
     $nw = max(1, (int)round($w * $scale)); $nh = max(1, (int)round($h * $scale));
     $out = imagecreatetruecolor($nw, $nh);
     imagecopyresampled($out, $img, 0, 0, 0, 0, $nw, $nh, $w, $h);

@@ -206,6 +206,7 @@
   function itemCard(it) {
     const l = state.logs[it.id]; const isAct = it.type === 'activity';
     const av = state.showPhotos ? itemAvatar(it, 'itc-av', isAct, 26) : null;
+    if (av && photoSrc(it)) { av.style.cursor = 'zoom-in'; av.setAttribute('role', 'button'); av.onclick = () => openPhoto(it); }
     const detail = isAct ? (it.purpose || '') : (fmt('take', { n: it.count }) + (it.purpose ? ' · ' + fmt('forPurpose', { purpose: (it.purpose || '').toLowerCase() }) : ''));
     const body = el('div', { style: 'flex:1;min-width:0' },
       el('div', { class: 'itc-top' }, el('span', { class: 'itc-name' }, it.name), el('span', { class: 'itc-time muted', html: M.icon('clock', 14, 'currentColor', 2.4) + ' ' + esc(fmtMin(it.time)) })),
@@ -386,6 +387,19 @@
     const span = el('span', { class: cls + ' ' + (isAct ? 'act' : 'pill'), html: src ? '' : M.icon(isAct ? 'activity' : 'pill', size, isAct ? 'var(--color-accent-2-700)' : 'var(--color-accent-700)') });
     if (src) { span.style.backgroundImage = 'url(' + src + ')'; span.style.backgroundSize = 'cover'; span.style.backgroundPosition = 'center'; }
     return span;
+  }
+  function openPhoto(it) {
+    const src = photoSrc(it); if (!src) return;
+    removeDialogs();
+    const bd = el('div', { class: 'dialog-backdrop lightbox', onclick: () => removeDialogs() });
+    const spin = el('div', { class: 'lb-spin' });
+    const img = el('img', { alt: it.name || '' });
+    img.onload = () => { spin.remove(); img.classList.add('show'); };
+    img.onerror = () => { spin.remove(); };
+    img.onclick = (ev) => { ev.stopPropagation(); img.classList.toggle('zoom'); };
+    const close = el('button', { class: 'lb-close', 'aria-label': t('close'), html: '✕', onclick: (ev) => { ev.stopPropagation(); removeDialogs(); } });
+    bd.append(spin, img, close); document.body.append(bd);
+    img.src = src;
   }
   async function uploadPhoto(file, pid) {
     const fd = new FormData(); fd.append('profile_id', pid); fd.append('file', file);
