@@ -246,7 +246,7 @@
   }
   function dayNoteCard() {
     const wrap = el('div', { class: 'card daynote elev-sm' }, el('div', { class: 'dn-label', html: M.icon('note', 16, 'currentColor', 2.2) + ' ' + esc(t('noteToday')) }));
-    const ta = el('textarea', { class: 'input dn-ta', rows: 2, placeholder: t('noteTodayPh') });
+    const ta = el('textarea', { class: 'input dn-ta', rows: 1, placeholder: t('noteTodayPh') });
     ta.value = state.dayNote || '';
     let saved = state.dayNote || '';
     ta.addEventListener('blur', async () => { const v = ta.value.trim(); if (v === saved) return; saved = v; state.dayNote = v; if (dataCache[state.sel]) dataCache[state.sel].dayNote = v; try { await api('/api/logs.php?action=daynote', { method: 'POST', body: { profile_id: state.sel, date: todayISO(), note: v } }); } catch (e) {} });
