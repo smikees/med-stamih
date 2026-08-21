@@ -1,0 +1,48 @@
+name: CI + Deploy
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  ci-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      - name: PHP lint (syntax gate)
+        run: |
+          set -e
+          find . -path ./vendor -prune -o -name '*.php' -print | while read -r f; do
+            php -l "$f"
+          done
+
+      # Phase 2+ will add: PHPUnit (unit/integration on a MySQL service),
+      # Vitest (client parity/i18n), and Playwright (E2E). They gate the deploy.
+
+      - name: Deploy via FTPS
+        if: success()
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          server-dir: ./
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            .github/**
+            tests/**
+            design_handoff_medication_tracker/**
+            **/*.md
+            config.php
+            config.php.example
+            client_secret_*.json
+            media/**

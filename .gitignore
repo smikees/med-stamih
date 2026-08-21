@@ -1,0 +1,16 @@
+# secrets — server-only, never commit
+config.php
+
+# user uploads
+media/*
+!media/.gitkeep
+
+# deps / build
+node_modules/
+vendor/
+.DS_Store
+*.log
+
+# design handoff + planning docs stay in the repo root but are NOT app code;
+# they are excluded from the FTP deploy in .github/workflows/deploy.yml
+client_secret_*.json

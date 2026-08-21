@@ -1,0 +1,20 @@
+<?php
+/* Template for config.php (the real one is gitignored, server-only).
+   Copy to config.php on the server and fill in real values. */
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'med_db');
+define('DB_USER', 'med_db_admin');
+define('DB_PASS', 'CHANGE_ME');
+
+define('APP_URL',     'https://med.stamih.com');
+define('AUTH_SECRET', 'CHANGE_ME_random_hex');
+define('INSTALL_KEY', 'CHANGE_ME_random_hex');
+define('CRON_KEY',    'CHANGE_ME_random_hex');
+define('ADMIN_EMAILS', 'you@example.com');   // comma-separated
+
+define('GOOGLE_CLIENT_ID',     '');
+define('GOOGLE_CLIENT_SECRET', '');
+define('GOOGLE_REDIRECT_URI',  'https://med.stamih.com/auth/callback.php');
+
+define('TELEGRAM_BOT_TOKEN', '');
+define('TELEGRAM_BOT_USER',  '');

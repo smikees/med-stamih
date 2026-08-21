@@ -1,0 +1,21 @@
+# Alongside — server config
+Options -Indexes
+DirectoryIndex index.html index.php
+
+# never serve source / secrets / docs as static files
+<FilesMatch "\.(sql|md|example|dist|lock)$">
+  Require all denied
+</FilesMatch>
+<FilesMatch "^(config\.php|composer\.json|package\.json)$">
+  Require all denied
+</FilesMatch>
+
+# keep the SPA shell fresh so deploys appear without a hard refresh
+<IfModule mod_headers.c>
+  <FilesMatch "\.(html|webmanifest)$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+  <FilesMatch "\.(css|js|svg)$">
+    Header set Cache-Control "public, max-age=3600"
+  </FilesMatch>
+</IfModule>

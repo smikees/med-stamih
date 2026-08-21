@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/organic-1774baa5-adcb-4207-90cd-9a179e28a0bf/styles.css">
+<script src="_ds/organic-1774baa5-adcb-4207-90cd-9a179e28a0bf/_ds_bundle.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@700&amp;display=swap" rel="stylesheet">
+<style>
+  html,body{margin:0}
+  body{background:var(--color-neutral-300)}
+  *{-webkit-tap-highlight-color:transparent}
+  a{color:var(--color-accent-700);text-underline-offset:3px}
+  a:hover{color:var(--color-accent-800)}
+  ::-webkit-scrollbar{width:0;height:0}
+  select.input{appearance:none;-webkit-appearance:none;padding-right:46px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23645c50' stroke-width='2.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 18px center;background-size:18px 18px}
+</style>
+</helmet>
+
+<div style="--font-heading: {{ headingFont }}; font-size: {{ rootFont }}px; font-family:var(--font-body); color:var(--color-text); background:var(--color-bg); max-width:480px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; position:relative; box-shadow:var(--shadow-lg); overflow:hidden">
+
+  <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:1;overflow-y:auto;display:flex;flex-direction:column;justify-content:center;padding:40px 28px;position:relative">
+      <div style="position:absolute;width:300px;height:300px;border-radius:50%;background:var(--color-accent-2-200);top:-130px;right:-120px"></div>
+      <div style="position:absolute;width:140px;height:140px;border-radius:50%;background:var(--color-accent-200);bottom:-40px;left:-50px"></div>
+      <div style="position:relative">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:28px">
+          <div style="width:60px;height:60px;border-radius:50%;background:var(--color-accent);display:grid;place-items:center;color:var(--color-bg)">{{ brandIcon }}</div>
+          <div>
+            <div style="font-family:var(--font-heading);font-size:2.1em;line-height:1">Alongside</div>
+            <div style="color:var(--color-neutral-700);font-size:.95em">{{ L.tagline }}</div>
+          </div>
+        </div>
+        <h1 style="font-family:var(--font-heading);font-size:1.8em;margin:0 0 4px">{{ L.welcome }}</h1>
+        <p style="color:var(--color-neutral-700);margin:0 0 18px">{{ L.signInSub }}</p>
+
+        <div style="background:var(--color-surface);border-radius:24px;padding:16px 18px;margin-bottom:22px">
+          <div style="font-size:.78em;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:10px">{{ L.familyName }}</div>
+          <div style="display:flex;gap:16px">
+            <sc-for list="{{ familyList }}" as="f" hint-placeholder-count="3">
+              <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+                <div style="width:46px;height:46px;border-radius:50%;display:grid;place-items:center;color:var(--color-bg);font-family:var(--font-heading);font-size:1.1em;background:{{ f.tint }}">{{ f.initial }}</div>
+                <span style="font-size:.78em;color:var(--color-neutral-800)">{{ f.name }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div class="field" style="margin-bottom:14px">
+          <label style="font-size:.85em">{{ L.email }}</label>
+          <input class="input" style="min-height:54px;font-size:1.05em" defaultValue="bennett.family@email.com">
+        </div>
+        <div class="field" style="margin-bottom:18px">
+          <label style="font-size:.85em">{{ L.password }}</label>
+          <input class="input" type="password" style="min-height:54px;font-size:1.05em" defaultValue="password">
+        </div>
+        <button class="btn btn-primary btn-block" style="min-height:58px;font-size:1.2em" onClick="{{ onSignIn }}">{{ L.signIn }}</button>
+        <p style="color:var(--color-neutral-600);font-size:.85em;text-align:center;margin:20px 0 0">{{ L.help }}</p>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isApp }}" hint-placeholder-val="{{ true }}">
+    <div style="display:contents">
+      <div style="flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:14px">
+
+        <sc-if value="{{ isToday }}">
+          <div style="padding:26px 20px 4px;position:relative">
+            <div style="position:absolute;width:180px;height:180px;border-radius:50%;background:var(--color-accent-2-100);top:-64px;right:-58px"></div>
+            <div style="position:relative">
+              <div style="color:var(--color-neutral-700);font-size:.78em;letter-spacing:.06em;text-transform:uppercase;font-weight:700">{{ todayKicker }}</div>
+              <h1 style="font-family:var(--font-heading);font-size:2em;margin:5px 0 0">{{ todayTitle }}</h1>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:10px;overflow-x:auto;padding:14px 20px 6px">
+            <sc-for list="{{ personChips }}" as="p" hint-placeholder-count="3">
+              <button onClick="{{ p.onClick }}" style="flex:none;display:flex;align-items:center;gap:9px;padding:6px 16px 6px 6px;border-radius:999px;border:2px solid {{ p.borderColor }};background:{{ p.bg }};cursor:pointer;color:var(--color-text)">
+                <span style="width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:var(--color-bg);font-family:var(--font-heading);font-size:.95em;background:{{ p.tint }}">{{ p.initial }}</span>
+                <span style="font-size:.95em;font-weight:600">{{ p.name }}</span>
+              </button>
+            </sc-for>
+          </div>
+
+          <div style="margin:10px 20px 0;background:var(--color-surface);border-radius:26px;padding:18px 20px;display:flex;align-items:center;gap:18px;box-shadow:var(--shadow-sm)">
+            <div style="position:relative;width:76px;height:76px;flex:none">
+              {{ summary.ringEl }}
+              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--font-heading);font-size:1.15em">{{ summary.fraction }}</div>
+            </div>
+            <div style="flex:1;min-width:0">
+              <div style="font-family:var(--font-heading);font-size:1.35em;line-height:1.1">{{ summary.headline }}</div>
+              <div style="color:var(--color-neutral-700);font-size:.92em;margin-top:2px">{{ summary.subline }}</div>
+            </div>
+          </div>
+
+          <div style="margin:12px 20px 0;display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:18px;font-weight:600;font-size:.92em;background:{{ reminder.bg }};color:{{ reminder.fg }}">{{ bellIcon }} {{ reminder.text }}</div>
+
+          <sc-if value="{{ hasSections }}" hint-placeholder-val="{{ true }}">
+            <sc-for list="{{ sections }}" as="section" hint-placeholder-count="2">
+              <div style="margin:0 20px">
+                <div style="display:flex;align-items:center;gap:11px;margin:24px 0 12px">
+                  <div style="width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:{{ section.iconBg }};color:{{ section.iconFg }}">{{ section.iconEl }}</div>
+                  <div>
+                    <div style="font-family:var(--font-heading);font-size:1.35em;line-height:1">{{ section.label }}</div>
+                    <sc-if value="{{ section.hasReminder }}"><div style="display:inline-flex;align-items:center;gap:4px;color:var(--color-neutral-700);font-size:.72em;margin-top:4px">{{ bellMini }} {{ section.reminderLabel }}</div></sc-if>
+                  </div>
+                  <sc-if value="{{ section.hasBadge }}"><span style="margin-left:auto;font-size:.72em;font-weight:700;padding:6px 13px;border-radius:999px;background:{{ section.badgeBg }};color:{{ section.badgeFg }}">{{ section.badgeText }}</span></sc-if>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:12px">
+                  <sc-for list="{{ section.items }}" as="item" hint-placeholder-count="2">
+                    <div style="background:var(--color-surface);border-radius:24px;padding:16px;box-shadow:var(--shadow-sm)">
+                      <div style="display:flex;gap:14px;align-items:flex-start">
+                        <sc-if value="{{ showPhotos }}"><div style="width:54px;height:54px;border-radius:50%;flex:none;display:grid;place-items:center;overflow:hidden;background:{{ item.photoTintBg }}">{{ item.photoContentEl }}</div></sc-if>
+                        <div style="flex:1;min-width:0">
+                          <div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline">
+                            <span style="font-size:1.2em;font-weight:700;line-height:1.15">{{ item.name }}</span>
+                            <span style="flex:none;color:var(--color-neutral-700);font-size:.78em;display:inline-flex;align-items:center;gap:3px">{{ clockMini }} {{ item.timeLabel }}</span>
+                          </div>
+                          <div style="color:var(--color-neutral-700);font-size:.92em;margin-top:3px">{{ item.detail }}</div>
+                          <sc-if value="{{ item.hasNote }}"><div style="display:inline-block;margin-top:9px;background:var(--color-accent-100);color:var(--color-accent-800);font-size:.8em;padding:4px 11px;border-radius:999px">{{ item.note }}</div></sc-if>
+                        </div>
+                      </div>
+                      <div style="margin-top:13px">
+                        <sc-if value="{{ item.isPending }}" hint-placeholder-val="{{ true }}">
+                          <div style="display:flex;gap:10px">
+                            <button class="btn btn-primary" onClick="{{ item.onTaken }}" style="flex:1;min-height:54px;font-size:1.05em;gap:8px">{{ checkIcon }} {{ item.takenBtn }}</button>
+                            <button class="btn btn-secondary" onClick="{{ item.onSkip }}" style="flex:1;min-height:54px;font-size:1.05em;gap:8px">{{ xIcon }} {{ item.didntBtn }}</button>
+                          </div>
+                        </sc-if>
+                        <sc-if value="{{ item.isTaken }}">
+                          <div style="background:var(--color-accent-2-100);border-radius:22px;padding:8px 8px 8px 18px">
+                            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+                              <span style="display:inline-flex;align-items:center;gap:8px;color:var(--color-accent-2-800);font-weight:700">{{ checkIcon }} {{ item.statusText }}</span>
+                              <button class="btn btn-ghost" onClick="{{ item.onChange }}" style="color:var(--color-accent-2-800);min-height:40px">{{ L.btnChange }}</button>
+                            </div>
+                            <sc-if value="{{ item.timeEditIdle }}">
+                              <button onClick="{{ item.onOpenTimeEdit }}" style="background:none;border:none;cursor:pointer;padding:4px 2px 2px;color:var(--color-accent-2-800);text-decoration:underline;text-underline-offset:3px;font:inherit;font-size:.82em">{{ L.editTime }}</button>
+                            </sc-if>
+                            <sc-if value="{{ item.timeEditActive }}">
+                              <div style="display:flex;align-items:center;gap:8px;padding:6px 2px 2px">
+                                <select class="input" style="min-height:44px;background:var(--color-surface)" defaultValue="{{ item.takenTimeValue }}" onChange="{{ item.onPickTime }}"><sc-for list="{{ item.timeOptions }}" as="o"><option value="{{ o.value }}">{{ o.label }}</option></sc-for></select>
+                                <button class="btn btn-ghost" onClick="{{ item.onCloseTimeEdit }}" style="color:var(--color-accent-2-800);min-height:44px">{{ L.close }}</button>
+                              </div>
+                            </sc-if>
+                          </div>
+                        </sc-if>
+                        <sc-if value="{{ item.isSkipped }}">
+                          <div style="display:flex;align-items:center;justify-content:space-between;background:var(--color-accent-100);border-radius:999px;padding:8px 8px 8px 18px">
+                            <span style="display:inline-flex;align-items:center;gap:8px;color:var(--color-accent-800);font-weight:700">{{ xIcon }} {{ item.statusText }}</span>
+                            <button class="btn btn-ghost" onClick="{{ item.onChange }}" style="color:var(--color-accent-800);min-height:40px">{{ L.btnChange }}</button>
+                          </div>
+                        </sc-if>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+          </sc-if>
+          <sc-if value="{{ noSections }}">
+            <div style="margin:30px 20px;text-align:center;color:var(--color-neutral-700)">
+              <p style="margin:0 0 12px">{{ noListMsg }}</p>
+              <button class="btn btn-primary" onClick="{{ onAddItem }}" style="min-height:52px">{{ L.addFirst }}</button>
+            </div>
+          </sc-if>
+          <div style="height:8px"></div>
+        </sc-if>
+
+        <sc-if value="{{ isHistory }}">
+          <div style="padding:26px 20px 4px;position:relative">
+            <div style="position:absolute;width:170px;height:170px;border-radius:50%;background:var(--color-accent-100);top:-60px;right:-54px"></div>
+            <div style="position:relative">
+              <div style="color:var(--color-neutral-700);font-size:.78em;letter-spacing:.06em;text-transform:uppercase;font-weight:700">{{ L.histKicker }}</div>
+              <h1 style="font-family:var(--font-heading);font-size:2em;margin:5px 0 0">{{ histTitle }}</h1>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:10px;overflow-x:auto;padding:14px 20px 6px">
+            <sc-for list="{{ personChips }}" as="p" hint-placeholder-count="3">
+              <button onClick="{{ p.onClick }}" style="flex:none;display:flex;align-items:center;gap:9px;padding:6px 16px 6px 6px;border-radius:999px;border:2px solid {{ p.borderColor }};background:{{ p.bg }};cursor:pointer;color:var(--color-text)">
+                <span style="width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:var(--color-bg);font-family:var(--font-heading);font-size:.95em;background:{{ p.tint }}">{{ p.initial }}</span>
+                <span style="font-size:.95em;font-weight:600">{{ p.name }}</span>
+              </button>
+            </sc-for>
+          </div>
+
+          <div style="display:flex;gap:12px;margin:12px 20px 0">
+            <div style="flex:1;background:var(--color-surface);border-radius:20px;padding:15px 16px">
+              <div style="font-family:var(--font-heading);font-size:1.9em;line-height:1;color:var(--color-accent-2-700)">{{ adherence }}%</div>
+              <div style="color:var(--color-neutral-700);font-size:.8em;margin-top:4px">{{ L.takenThisWeek }}</div>
+            </div>
+            <div style="flex:1;background:var(--color-surface);border-radius:20px;padding:15px 16px">
+              <div style="font-family:var(--font-heading);font-size:1.9em;line-height:1">{{ doseTaken }}</div>
+              <div style="color:var(--color-neutral-700);font-size:.8em;margin-top:4px">{{ doseLabel }}</div>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin:16px 20px 0">
+            <button class="btn btn-icon btn-secondary" aria-label="{{ L.prevWeek }}" onClick="{{ onPrevWeek }}" style="width:44px;height:44px">{{ chevLeft }}</button>
+            <div style="font-family:var(--font-heading);font-size:1.2em;text-align:center;flex:1">{{ weekCaption }}</div>
+            <button class="btn btn-icon btn-secondary" aria-label="{{ L.nextWeek }}" onClick="{{ onNextWeek }}" disabled="{{ nextDisabled }}" style="width:44px;height:44px">{{ chevRight }}</button>
+          </div>
+          <div style="margin:10px 20px 0;background:var(--color-surface);border-radius:24px;padding:16px 14px;box-shadow:var(--shadow-sm)">
+            <div style="overflow-x:auto">
+              <div style="display:grid;grid-template-columns:116px repeat(7, minmax(28px,1fr));gap:6px;min-width:360px">
+                <div></div>
+                <sc-for list="{{ grid.days }}" as="d" hint-placeholder-count="7">
+                  <div style="text-align:center">
+                    <div style="font-size:.66em;color:var(--color-neutral-600);font-weight:700">{{ d.dow }}</div>
+                    <div style="font-size:.82em;margin-top:2px;color:{{ d.domColor }};font-weight:{{ d.domWeight }}">{{ d.dom }}</div>
+                  </div>
+                </sc-for>
+                <sc-for list="{{ grid.rows }}" as="row" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:center;font-size:.8em;font-weight:600;line-height:1.15;padding-right:6px;overflow:hidden">{{ row.name }}</div>
+                  <sc-for list="{{ row.cells }}" as="c" hint-placeholder-count="7">
+                    <button onClick="{{ c.onClick }}" style="height:34px;border-radius:9px;border:none;cursor:{{ c.cursor }};font-size:{{ c.fs }};font-weight:700;display:grid;place-items:center;background:{{ c.bg }};color:{{ c.fg }}">{{ c.symbol }}</button>
+                  </sc-for>
+                </sc-for>
+              </div>
+            </div>
+            <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:1px solid var(--color-divider);font-size:.76em;color:var(--color-neutral-700)">
+              <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:18px;height:18px;border-radius:6px;background:var(--color-accent-2-100);color:var(--color-accent-2-700);display:grid;place-items:center">{{ legendCheck }}</span> {{ L.legendTaken }}</span>
+              <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:18px;height:18px;border-radius:6px;background:var(--color-accent-100);color:var(--color-accent-700);display:grid;place-items:center">{{ legendX }}</span> {{ L.legendNot }}</span>
+              <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:18px;height:18px;border-radius:6px;background:var(--color-neutral-200);color:var(--color-neutral-500);display:grid;place-items:center">{{ legendDash }}</span> {{ L.legendNo }}</span>
+              <span style="display:inline-flex;align-items:center;gap:6px"><span style="width:18px;height:18px;border-radius:6px;background:var(--color-neutral-100);color:var(--color-neutral-400);display:grid;place-items:center;font-size:.5em;font-weight:700">N/A</span> {{ L.legendNA }}</span>
+            </div>
+            <div style="margin-top:10px;font-size:.78em;color:var(--color-neutral-600);text-align:center">{{ L.tapCorrect }}</div>
+            <sc-if value="{{ histDirty }}">
+              <div style="margin-top:12px;display:flex;justify-content:center;gap:10px">
+                <button class="btn btn-secondary" onClick="{{ onCancelHist }}" style="min-height:46px;gap:7px">{{ undoIcon }} {{ L.cancelChanges }}</button>
+                <button class="btn btn-primary" onClick="{{ onSaveHist }}" style="min-height:46px;gap:7px">{{ checkIcon }} {{ L.saveChanges }}</button>
+              </div>
+            </sc-if>
+          </div>
+
+          <div style="text-align:center;margin:12px 20px 0"><button onClick="{{ onOpenAllHistory }}" style="background:none;border:none;cursor:pointer;color:var(--color-accent-700);text-decoration:underline;text-underline-offset:3px;font:inherit;font-weight:600;font-size:.92em">{{ L.viewAll }}</button></div>
+
+          <sc-if value="{{ hasMisses }}">
+            <div style="margin:22px 20px 0">
+              <div style="font-family:var(--font-heading);font-size:1.25em;margin-bottom:10px">{{ L.worthLook }}</div>
+              <div style="display:flex;flex-direction:column;gap:9px">
+                <sc-for list="{{ recentMisses }}" as="m" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:center;gap:12px;background:var(--color-surface);border-radius:16px;padding:12px 14px">
+                    <span style="width:34px;height:34px;border-radius:50%;flex:none;display:grid;place-items:center;font-weight:700;background:{{ m.bg }};color:{{ m.fg }}">{{ m.mark }}</span>
+                    <div style="flex:1;min-width:0"><div style="font-weight:600">{{ m.name }}</div><div style="color:var(--color-neutral-700);font-size:.82em">{{ m.when }} · {{ m.kind }}</div></div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+          <div style="height:8px"></div>
+        </sc-if>
+
+        <sc-if value="{{ isManage }}">
+          <div style="padding:26px 20px 4px;position:relative">
+            <div style="position:absolute;width:160px;height:160px;border-radius:50%;background:var(--color-accent-2-100);top:-56px;right:-50px"></div>
+            <div style="position:relative">
+              <div style="color:var(--color-neutral-700);font-size:.78em;letter-spacing:.06em;text-transform:uppercase;font-weight:700">{{ L.mngKicker }}</div>
+              <h1 style="font-family:var(--font-heading);font-size:2em;margin:5px 0 0">{{ L.mngTitle }}</h1>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:10px;overflow-x:auto;padding:14px 20px 6px">
+            <sc-for list="{{ manageChips }}" as="p" hint-placeholder-count="3">
+              <button onClick="{{ p.onClick }}" style="flex:none;display:flex;align-items:center;gap:9px;padding:6px 16px 6px 6px;border-radius:999px;border:2px solid {{ p.borderColor }};background:{{ p.bg }};cursor:pointer;color:var(--color-text)">
+                <span style="width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:var(--color-bg);font-family:var(--font-heading);font-size:.95em;background:{{ p.tint }}">{{ p.initial }}</span>
+                <span style="font-size:.95em;font-weight:600">{{ p.name }}</span>
+              </button>
+            </sc-for>
+          </div>
+
+          <div style="margin:14px 20px 0;display:flex;align-items:center;justify-content:space-between">
+            <div style="font-family:var(--font-heading);font-size:1.3em">{{ manageListTitle }}</div>
+            <button class="btn btn-primary" onClick="{{ onAddItem }}" style="min-height:44px;gap:6px">{{ plusIcon }} {{ L.addBtn }}</button>
+          </div>
+          <div style="margin:12px 20px 0;display:flex;flex-direction:column;gap:9px">
+            <sc-for list="{{ manageList }}" as="m" hint-placeholder-count="4">
+              <div style="background:var(--color-surface);border-radius:18px;padding:12px 12px 12px 14px;display:flex;align-items:center;gap:12px">
+                <sc-if value="{{ showPhotos }}"><div style="width:44px;height:44px;border-radius:50%;flex:none;display:grid;place-items:center;overflow:hidden;background:{{ m.tintBg }}">{{ m.photoContentEl }}</div></sc-if>
+                <div style="flex:1;min-width:0"><div style="font-weight:700;font-size:1.02em">{{ m.name }}</div><div style="color:var(--color-neutral-700);font-size:.82em">{{ m.meta }}</div><sc-if value="{{ m.hasRecur }}"><div style="color:var(--color-accent-2-700);font-size:.78em;margin-top:2px;font-weight:600">{{ m.recur }}</div></sc-if></div>
+                <button class="btn btn-icon btn-secondary" aria-label="Edit" onClick="{{ m.onEdit }}" style="width:44px;height:44px">{{ pencilIcon }}</button>
+                <button class="btn btn-icon btn-secondary" aria-label="Remove" onClick="{{ m.onRemove }}" style="width:44px;height:44px">{{ trashIcon }}</button>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="margin:26px 20px 0">
+            <div style="font-family:var(--font-heading);font-size:1.3em;margin-bottom:4px">{{ L.familyMembers }}</div>
+            <p style="color:var(--color-neutral-700);font-size:.86em;margin:0 0 10px">{{ L.familyNote }}</p>
+            <div style="background:var(--color-surface);border-radius:20px;padding:6px 16px">
+              <sc-for list="{{ familyList }}" as="f" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--color-divider)">
+                  <div style="width:40px;height:40px;border-radius:50%;flex:none;display:grid;place-items:center;color:var(--color-bg);font-family:var(--font-heading);background:{{ f.tint }}">{{ f.initial }}</div>
+                  <div style="flex:1;min-width:0"><div style="font-weight:700">{{ f.name }}</div><div style="color:var(--color-neutral-700);font-size:.82em">{{ f.relation }}</div></div>
+                  <button class="btn btn-icon btn-ghost" aria-label="Edit person" onClick="{{ f.onEdit }}" style="width:40px;height:40px;color:var(--color-neutral-600)">{{ pencilIcon }}</button>
+                  <sc-if value="{{ f.canRemove }}"><button class="btn btn-icon btn-ghost" aria-label="Remove person" onClick="{{ f.onRemove }}" style="width:40px;height:40px;color:var(--color-neutral-600)">{{ trashIcon }}</button></sc-if>
+                </div>
+              </sc-for>
+              <button class="btn btn-ghost btn-block" onClick="{{ onAddPerson }}" style="min-height:50px;gap:6px;justify-content:flex-start;color:var(--color-accent-700)">{{ plusIcon }} {{ L.addMember }}</button>
+            </div>
+          </div>
+
+          <div style="margin:22px 20px 6px;background:var(--color-accent-2-100);border-radius:20px;padding:16px 18px">
+            <div style="font-family:var(--font-heading);font-size:1.15em;color:var(--color-accent-2-800)">{{ L.fixTitle }}</div>
+            <p style="color:var(--color-accent-2-800);font-size:.88em;margin:6px 0 12px;opacity:.9">{{ L.fixBody }}</p>
+            <button class="btn btn-secondary" onClick="{{ goHistory }}" style="min-height:46px">{{ L.goHistoryBtn }}</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isSettings }}">
+          <div style="padding:26px 20px 4px;position:relative">
+            <div style="position:absolute;width:160px;height:160px;border-radius:50%;background:var(--color-accent-100);top:-56px;right:-50px"></div>
+            <div style="position:relative">
+              <div style="color:var(--color-neutral-700);font-size:.78em;letter-spacing:.06em;text-transform:uppercase;font-weight:700">{{ L.setKicker }}</div>
+              <h1 style="font-family:var(--font-heading);font-size:2em;margin:5px 0 0">{{ L.setTitle }}</h1>
+            </div>
+          </div>
+
+          <div style="margin:16px 20px 0;display:flex;flex-direction:column;gap:16px">
+            <div style="background:var(--color-surface);border-radius:22px;padding:16px 18px">
+              <div style="display:flex;align-items:center;gap:9px;font-weight:700;font-size:1.05em;margin-bottom:12px">{{ globeIcon }} {{ L.setLanguage }}</div>
+              <div style="display:flex;gap:10px">
+                <sc-for list="{{ langOptions }}" as="o" hint-placeholder-count="2">
+                  <button onClick="{{ o.onClick }}" style="flex:1;min-height:54px;border-radius:999px;cursor:pointer;font-size:1.05em;font-weight:700;border:2px solid {{ o.border }};background:{{ o.bg }};color:{{ o.fg }}">{{ o.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="background:var(--color-surface);border-radius:22px;padding:16px 18px">
+              <div style="font-weight:700;font-size:1.05em;margin-bottom:12px">{{ L.setTextSize }}</div>
+              <div style="display:flex;gap:8px">
+                <sc-for list="{{ textSizeOptions }}" as="o" hint-placeholder-count="3">
+                  <button onClick="{{ o.onClick }}" style="flex:1;min-height:52px;border-radius:999px;cursor:pointer;font-weight:700;border:2px solid {{ o.border }};background:{{ o.bg }};color:{{ o.fg }};font-size:{{ o.size }}">{{ o.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="background:var(--color-surface);border-radius:22px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px">
+              <div style="font-weight:700;font-size:1.05em">{{ L.setPhotos }}</div>
+              <div style="display:flex;gap:8px;flex:none">
+                <sc-for list="{{ photoOptions }}" as="o" hint-placeholder-count="2">
+                  <button onClick="{{ o.onClick }}" style="min-width:64px;min-height:48px;border-radius:999px;cursor:pointer;font-weight:700;border:2px solid {{ o.border }};background:{{ o.bg }};color:{{ o.fg }}">{{ o.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+
+            <button class="btn btn-ghost btn-block" onClick="{{ onSignOut }}" style="min-height:54px;margin-top:6px;color:var(--color-neutral-700)">{{ L.signOut }}</button>
+          </div>
+          <div style="height:8px"></div>
+        </sc-if>
+
+      </div>
+
+      <div style="display:flex;border-top:1px solid var(--color-divider);background:var(--color-bg)">
+        <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="4">
+          <button onClick="{{ n.onClick }}" style="flex:1;background:transparent;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 0 11px;min-height:62px;justify-content:center;color:{{ n.color }}">
+            {{ n.iconEl }}
+            <span style="font-size:.72em;font-weight:700">{{ n.label }}</span>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showEditDialog }}">
+    <div class="dialog-backdrop" onClick="{{ onCancelEdit }}">
+      <div class="dialog" onClick="{{ stop }}" style="gap:13px;max-height:88vh;overflow-y:auto;background:var(--color-neutral-100)">
+        <div class="dialog-title">{{ editTitle }}</div>
+        <div class="field"><label>{{ L.fName }}</label><input class="input" style="min-height:48px" value="{{ editItem.name }}" onInput="{{ onEditName }}" placeholder="{{ L.phName }}"></div>
+        <div class="field"><label>{{ L.fPhoto }}</label>
+          <div style="display:flex;align-items:center;gap:14px">
+            <div style="width:60px;height:60px;border-radius:50%;flex:none;display:grid;place-items:center;overflow:hidden;background:var(--color-accent-100)">{{ editPhotoEl }}</div>
+            <label class="btn btn-secondary" style="min-height:44px;cursor:pointer">{{ editPhotoBtnLabel }}<input type="file" accept="image/*" onChange="{{ onEditPhoto }}" style="display:none"></label>
+            <sc-if value="{{ editHasPhoto }}"><button class="btn btn-ghost" onClick="{{ onRemoveEditPhoto }}" style="min-height:44px;color:var(--color-neutral-700)">{{ L.removePhoto }}</button></sc-if>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px">
+          <div class="field" style="flex:1"><label>{{ L.fType }}</label><select class="input" style="min-height:48px" defaultValue="{{ editItem.type }}" onChange="{{ onEditType }}"><sc-for list="{{ typeOptions }}" as="o"><option value="{{ o.value }}">{{ o.label }}</option></sc-for></select></div>
+          <div class="field" style="flex:1"><label>{{ L.fHowMany }}</label><input class="input" type="number" min="1" style="min-height:48px" value="{{ editItem.count }}" onInput="{{ onEditCount }}"></div>
+        </div>
+        <div style="display:flex;gap:12px">
+          <div class="field" style="flex:1"><label>{{ L.fWhen }}</label><select class="input" style="min-height:48px" defaultValue="{{ editItem.group }}" onChange="{{ onEditGroup }}"><sc-for list="{{ groupOptions }}" as="o"><option value="{{ o.value }}">{{ o.label }}</option></sc-for></select></div>
+          <div class="field" style="flex:1"><label>{{ L.fTime }}</label><select class="input" style="min-height:48px" defaultValue="{{ editTime }}" onChange="{{ onEditTime }}"><sc-for list="{{ timeOptions }}" as="o"><option value="{{ o.value }}">{{ o.label }}</option></sc-for></select></div>
+        </div>
+        <div class="field"><label>{{ L.fRepeat }}</label><select class="input" style="min-height:48px" defaultValue="{{ editItem.freq }}" onChange="{{ onEditFreq }}"><sc-for list="{{ freqOptions }}" as="o"><option value="{{ o.value }}">{{ o.label }}</option></sc-for></select></div>
+        <sc-if value="{{ editIsWeekly }}">
+          <div class="field"><label>{{ L.fDays }}</label>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <sc-for list="{{ weekdayChips }}" as="w" hint-placeholder-count="7"><button type="button" onClick="{{ w.onClick }}" style="width:42px;height:46px;border-radius:999px;cursor:pointer;font-weight:700;font-size:.85em;border:2px solid {{ w.border }};background:{{ w.bg }};color:{{ w.fg }}">{{ w.label }}</button></sc-for>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ editIsMonthly }}">
+          <div class="field"><label>{{ L.fDom }}</label><select class="input" style="min-height:48px" defaultValue="{{ editDom }}" onChange="{{ onEditDom }}"><sc-for list="{{ domOptions }}" as="o"><option value="{{ o.value }}">{{ o.label }}</option></sc-for></select></div>
+        </sc-if>
+        <div class="field"><label>{{ L.fEnd }}</label>
+          <div style="display:flex;gap:6px;margin-bottom:10px">
+            <sc-for list="{{ endModeOptions }}" as="o" hint-placeholder-count="3"><button type="button" onClick="{{ o.onClick }}" style="flex:1;min-height:46px;border-radius:999px;cursor:pointer;font-weight:700;font-size:.8em;padding:0 4px;border:2px solid {{ o.border }};background:{{ o.bg }};color:{{ o.fg }}">{{ o.label }}</button></sc-for>
+          </div>
+          <sc-if value="{{ editEndIsDate }}"><input class="input" type="date" style="min-height:48px" value="{{ editItem.endDate }}" onInput="{{ onEditEnd }}"></sc-if>
+          <sc-if value="{{ editEndIsCount }}"><div style="display:flex;align-items:center;gap:10px"><input class="input" type="number" min="1" style="min-height:48px;max-width:130px" value="{{ editEndCount }}" onInput="{{ onEditEndCount }}"><span style="color:var(--color-neutral-700)">{{ L.endTimes }}</span></div></sc-if>
+        </div>
+        <div class="field"><label>{{ L.fFor }}</label><input class="input" style="min-height:48px" value="{{ editItem.purpose }}" onInput="{{ onEditPurpose }}" placeholder="{{ L.phFor }}"></div>
+        <div class="field"><label>{{ L.fNote }}</label><input class="input" style="min-height:48px" value="{{ editItem.note }}" onInput="{{ onEditNote }}" placeholder="{{ L.phNote }}"></div>
+        <div class="dialog-actions">
+          <button class="btn btn-secondary" onClick="{{ onCancelEdit }}" style="min-height:48px">{{ L.cancel }}</button>
+          <button class="btn btn-primary" onClick="{{ onSaveEdit }}" style="min-height:48px">{{ L.save }}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showPersonDialog }}">
+    <div class="dialog-backdrop" onClick="{{ onCancelPerson }}">
+      <div class="dialog" onClick="{{ stop }}" style="gap:13px;background:var(--color-neutral-100)">
+        <div class="dialog-title">{{ personDialogTitle }}</div>
+        <sc-if value="{{ personIsAdd }}"><p style="margin:0;color:var(--color-neutral-700);font-size:.9em">{{ L.personAddSub }}</p></sc-if>
+        <div class="field"><label>{{ L.fName }}</label><input class="input" style="min-height:48px" value="{{ personDraft.name }}" onInput="{{ onPersonName }}" placeholder="{{ L.phPersonName }}"></div>
+        <div class="field"><label>{{ L.fRelationship }}</label><input class="input" style="min-height:48px" value="{{ personDraft.relation }}" onInput="{{ onPersonRelation }}" placeholder="{{ L.phRelationship }}"></div>
+        <div class="dialog-actions">
+          <button class="btn btn-secondary" onClick="{{ onCancelPerson }}" style="min-height:48px">{{ L.cancel }}</button>
+          <button class="btn btn-primary" onClick="{{ onSavePerson }}" style="min-height:48px">{{ personSaveLabel }}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showAllHistory }}">
+    <div class="dialog-backdrop" onClick="{{ onCloseAllHistory }}">
+      <div class="dialog" onClick="{{ stop }}" style="gap:12px;max-height:88vh;overflow-y:auto;background:var(--color-neutral-100);width:min(440px,100%)">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+          <div class="dialog-title">{{ allHistTitle }}</div>
+          <button class="btn btn-icon btn-secondary" aria-label="{{ L.close }}" onClick="{{ onCloseAllHistory }}" style="width:44px;height:44px">{{ xIcon }}</button>
+        </div>
+        <div style="font-size:.9em;color:var(--color-neutral-700);margin-top:-6px">{{ allHistSub }}</div>
+        <sc-if value="{{ allHistEmpty }}"><p style="color:var(--color-neutral-700)">{{ L.noRecordsWeek }}</p></sc-if>
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <sc-for list="{{ allHistory }}" as="day" hint-placeholder-count="6">
+            <div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><span style="font-family:var(--font-heading);font-size:1.05em">{{ day.heading }}</span><sc-if value="{{ day.isToday }}"><span style="font-size:.68em;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--color-accent-2-200);color:var(--color-accent-2-800)">{{ L.weekThis }}</span></sc-if></div>
+              <div style="display:flex;flex-direction:column;gap:7px">
+                <sc-for list="{{ day.rows }}" as="r" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:center;gap:11px;background:var(--color-surface);border-radius:14px;padding:9px 12px">
+                    <span style="width:30px;height:30px;border-radius:50%;flex:none;display:grid;place-items:center;font-weight:700;background:{{ r.bg }};color:{{ r.fg }}">{{ r.mark }}</span>
+                    <div style="flex:1;min-width:0"><div style="font-weight:600">{{ r.name }}</div><div style="color:var(--color-neutral-700);font-size:.8em">{{ r.timeLabel }}</div></div>
+                    <span style="font-size:.82em;color:var(--color-neutral-700);text-align:right">{{ r.statusLabel }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: { &quot;width&quot;: 440, &quot;height&quot;: 924 },
+  &quot;language&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;Română&quot;, &quot;English&quot;], &quot;default&quot;: &quot;Română&quot;, &quot;tsType&quot;: &quot;'Română'|'English'&quot;, &quot;section&quot;: &quot;Preview&quot; },
+  &quot;startScreen&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;options&quot;: [&quot;Login&quot;, &quot;Today&quot;, &quot;History&quot;, &quot;Manage&quot;], &quot;default&quot;: &quot;Today&quot;, &quot;tsType&quot;: &quot;'Login'|'Today'|'History'|'Manage'&quot;, &quot;section&quot;: &quot;Preview&quot; }
+}">
+class Component extends DCLogic {
+  GROUPS = [
+    { key:'morning', label:'groupMorning', start:5*60,  end:11*60 },
+    { key:'noon',    label:'groupNoon',    start:11*60, end:15*60 },
+    { key:'evening', label:'groupEvening', start:16*60, end:21*60 },
+    { key:'bedtime', label:'groupBedtime', start:21*60, end:24*60 },
+  ];
+  ICONS = {
+    check:[['path',{d:'M20 6 9 17l-5-5'}]],
+    x:[['path',{d:'M18 6 6 18'}],['path',{d:'M6 6l12 12'}]],
+    morning:[['path',{d:'M12 2v8'}],['path',{d:'m4.93 10.93 1.41 1.41'}],['path',{d:'M2 18h2'}],['path',{d:'M20 18h2'}],['path',{d:'m19.07 10.93-1.41 1.41'}],['path',{d:'M22 22H2'}],['path',{d:'m8 6 4-4 4 4'}],['path',{d:'M16 18a4 4 0 0 0-8 0'}]],
+    noon:[['circle',{cx:12,cy:12,r:4}],['path',{d:'M12 2v2'}],['path',{d:'M12 20v2'}],['path',{d:'m4.93 4.93 1.41 1.41'}],['path',{d:'m17.66 17.66 1.41 1.41'}],['path',{d:'M2 12h2'}],['path',{d:'M20 12h2'}],['path',{d:'m6.34 17.66-1.41 1.41'}],['path',{d:'m19.07 4.93-1.41 1.41'}]],
+    evening:[['path',{d:'M12 10V2'}],['path',{d:'m4.93 10.93 1.41 1.41'}],['path',{d:'M2 18h2'}],['path',{d:'M20 18h2'}],['path',{d:'m19.07 10.93-1.41 1.41'}],['path',{d:'M22 22H2'}],['path',{d:'m16 6-4 4-4-4'}],['path',{d:'M16 18a4 4 0 0 0-8 0'}]],
+    bedtime:[['path',{d:'M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z'}]],
+    pill:[['path',{d:'m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z'}],['path',{d:'m8.5 8.5 7 7'}]],
+    activity:[['path',{d:'M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2'}]],
+    plus:[['path',{d:'M5 12h14'}],['path',{d:'M12 5v14'}]],
+    minus:[['path',{d:'M5 12h14'}]],
+    pencil:[['path',{d:'M12 20h9'}],['path',{d:'M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z'}]],
+    trash:[['path',{d:'M3 6h18'}],['path',{d:'M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6'}],['path',{d:'M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2'}]],
+    today:[['circle',{cx:12,cy:12,r:10}],['path',{d:'m9 12 2 2 4-4'}]],
+    calendar:[['rect',{x:3,y:4,width:18,height:18,rx:2}],['path',{d:'M16 2v4'}],['path',{d:'M8 2v4'}],['path',{d:'M3 10h18'}]],
+    settings:[['path',{d:'M4 21v-7'}],['path',{d:'M4 10V3'}],['path',{d:'M12 21v-9'}],['path',{d:'M12 8V3'}],['path',{d:'M20 21v-5'}],['path',{d:'M20 12V3'}],['path',{d:'M1 14h6'}],['path',{d:'M9 8h6'}],['path',{d:'M17 16h6'}]],
+    clock:[['circle',{cx:12,cy:12,r:10}],['path',{d:'M12 6v6l4 2'}]],
+    bell:[['path',{d:'M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9'}],['path',{d:'M10.3 21a1.94 1.94 0 0 0 3.4 0'}]],
+    globe:[['circle',{cx:12,cy:12,r:10}],['path',{d:'M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20'}],['path',{d:'M2 12h20'}]],
+    gear:[['path',{d:'M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z'}],['circle',{cx:12,cy:12,r:3}]],
+    camera:[['path',{d:'M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z'}],['circle',{cx:12,cy:13,r:3}]],
+    chevronLeft:[['path',{d:'m15 18-6-6 6-6'}]],
+    chevronRight:[['path',{d:'m9 18 6-6-6-6'}]],
+    rotate:[['path',{d:'M3 7v6h6'}],['path',{d:'M21 17a9 9 0 0 0-9-9 8.97 8.97 0 0 0-6.34 2.66L3 13'}]],
+  };
+  STR = {
+    en: {
+      tagline:'Daily medicines, together', welcome:'Welcome back', signInSub:"Sign in to your family's daily list.", familyName:'The Bennett family', email:'Email', password:'Password', signIn:'Sign in', help:'Trouble signing in? Call Sarah on (555) 010-2929',
+      navToday:'Today', navHistory:'History', navManage:'Manage', navSettings:'Settings',
+      greetMorning:'Good morning', greetAfternoon:'Good afternoon', greetEvening:'Good evening',
+      daysTitle:"{name}'s day", weekTitle:"{name}'s week",
+      sumAllDone:'All done for today', sumNothing:'Nothing scheduled', sumPillLeft:'{n} pill left to take', sumPillsLeft:'{n} pills left to take', sumTaken:'{done} of {total} taken', sumNotTaken:'{n} not taken', sumAddManage:'Add items in Manage',
+      remOverdue:'{group} medicines are overdue', remDue:'{group} medicines are due now', remNext:'Next reminder · {group} at {time}', remAllDone:'All done for today — lovely work',
+      badgeAllDone:'All done', badgeDue:'Due now', badgeOverdue:'Overdue', badgeSoon:'Coming up',
+      reminderWord:'Reminder {time}', secActivities:'Activities',
+      take:'Take {n}', forPurpose:'for {purpose}', takenAt:'Taken at {time}', takenWord:'Taken', markedNot:'Marked not taken',
+      btnTaken:'Taken', btnDidnt:"Didn't take", btnDone:'Done', btnDidntDo:"Didn't do", btnChange:'Change', editTime:'Edit time',
+      histKicker:'This week', takenThisWeek:'taken this week', ofDoses:'of {n} doses', weekTaken:'of {n} taken this week', legendTaken:'Taken', legendNot:'Not taken', legendNo:'No record', legendNA:'Not scheduled', tapCorrect:'Tap any square to correct it — saved for the whole family.', cancelChanges:'Cancel changes', saveChanges:'Save changes', viewAll:'View entire history', allHistTitle:'Full history', last30:'Last 30 days', weekThis:'This week', weekLast:'Last week', prevWeek:'Previous week', nextWeek:'Next week', close:'Close', noRecordsWeek:'Nothing scheduled this week.', fRepeat:'Repeats', repDaily:'Every day', repWeekly:'Weekly', repMonthly:'Monthly', fDays:'On these days', fDom:'Day of the month', fEnd:'Ends (optional)', endNever:'No end', endOnDate:'On a date', endAfter:'After N times', fEndCount:'Number of times', endTimes:'times', domLabel:'day {n}', until:'until {date}', untilCount:'{n} times', worthLook:'Worth a look', missNot:'not taken', missNo:'no record',
+      mngKicker:'Set up', mngTitle:'Manage', listOf:"{name}'s list", addBtn:'Add', familyMembers:'Family members', familyNote:'Everyone signed in to this family can view and update any list.', addMember:'Add a family member', fixTitle:'Fixing a mistake', fixBody:'Open History and tap any day to change whether something was taken.', goHistoryBtn:'Go to History', signOut:'Sign out', noList:"Nothing on {name}'s list yet.", addFirst:'Add the first item',
+      setKicker:'Preferences', setTitle:'Settings', setLanguage:'Language', setTextSize:'Text size', tsStandard:'Standard', tsLarge:'Large', tsXL:'Extra large', setPhotos:'Show pill photos', onWord:'On', offWord:'Off',
+      editAdd:'Add to the list', editEdit:'Edit item', fName:'Name', fType:'Type', fHowMany:'How many', fWhen:'When', fTime:'Time', fFor:"What it's for (optional)", fNote:'Special note (optional)', cancel:'Cancel', save:'Save', phName:'e.g. Metformin, or Back exercise', phFor:'e.g. Blood pressure', phNote:'e.g. take with food', fPhoto:'Photo (optional)', addPhoto:'Add photo', changePhoto:'Change photo', removePhoto:'Remove', typeMedicine:'Medicine', typeActivity:'Activity / task',
+      personAddTitle:'Add a family member', personAddSub:"They'll appear in the switcher with an empty list you can fill in.", fRelationship:'Relationship', addPersonBtn:'Add', phPersonName:'e.g. Eleanor', phRelationship:'e.g. Mother', personEditTitle:'Edit family member', savePersonBtn:'Save', editPerson:'Edit',
+      groupMorning:'Morning', groupNoon:'Midday', groupEvening:'Evening', groupBedtime:'Bedtime',
+    },
+    ro: {
+      tagline:'Medicamente zilnice, împreună', welcome:'Bine ai revenit', signInSub:'Conectează-te la lista zilnică a familiei.', familyName:'Familia Bennett', email:'E-mail', password:'Parolă', signIn:'Conectează-te', help:'Probleme la conectare? Sun-o pe Sarah la (555) 010-2929',
+      navToday:'Azi', navHistory:'Istoric', navManage:'Gestionare', navSettings:'Setări',
+      greetMorning:'Bună dimineața', greetAfternoon:'Bună ziua', greetEvening:'Bună seara',
+      daysTitle:'Ziua lui {name}', weekTitle:'Săptămâna lui {name}',
+      sumAllDone:'Gata pe azi', sumNothing:'Nimic programat', sumPillLeft:'Mai ai {n} pastilă de luat', sumPillsLeft:'Mai ai {n} pastile de luat', sumTaken:'{done} din {total} luate', sumNotTaken:'{n} neluate', sumAddManage:'Adaugă din Gestionare',
+      remOverdue:'Medicamentele de {group} sunt întârziate', remDue:'Medicamentele de {group} trebuie luate acum', remNext:'Următoarea amintire · {group} la {time}', remAllDone:'Gata pe azi — bravo!',
+      badgeAllDone:'Gata', badgeDue:'Acum', badgeOverdue:'Întârziat', badgeSoon:'Urmează',
+      reminderWord:'Reamintire la {time}', secActivities:'Activități',
+      take:'ia {n}', forPurpose:'pentru {purpose}', takenAt:'Luat la {time}', takenWord:'Luat', markedNot:'Marcat ca neluat',
+      btnTaken:'Am luat', btnDidnt:'Nu am luat', btnDone:'Am făcut', btnDidntDo:'Nu am făcut', btnChange:'Modifică', editTime:'Modifică ora',
+      histKicker:'Săptămâna aceasta', takenThisWeek:'luate săptămâna asta', ofDoses:'din {n} doze', weekTaken:'din {n} luate săpt. asta', legendTaken:'Luat', legendNot:'Neluat', legendNo:'Fără date', legendNA:'Nu se aplică', tapCorrect:'Apasă orice pătrat pentru a corecta — salvat pentru toată familia.', cancelChanges:'Anulează modificările', saveChanges:'Salvează modificările', viewAll:'Vezi tot istoricul', allHistTitle:'Istoric complet', last30:'Ultimele 30 de zile', weekThis:'Săptămâna asta', weekLast:'Săptămâna trecută', prevWeek:'Săptămâna anterioară', nextWeek:'Săptămâna următoare', close:'Închide', noRecordsWeek:'Nimic programat în această săptămână.', fRepeat:'Repetare', repDaily:'În fiecare zi', repWeekly:'Săptămânal', repMonthly:'Lunar', fDays:'În aceste zile', fDom:'Ziua lunii', fEnd:'Se termină (opțional)', endNever:'Fără sfârșit', endOnDate:'La o dată', endAfter:'După N ori', fEndCount:'Număr de ocazii', endTimes:'ocazii', domLabel:'ziua {n}', until:'până la {date}', untilCount:'{n} ocazii', worthLook:'De verificat', missNot:'neluat', missNo:'fără date',
+      mngKicker:'Configurare', mngTitle:'Gestionare', listOf:'Lista lui {name}', addBtn:'Adaugă', familyMembers:'Membrii familiei', familyNote:'Toți cei conectați la această familie pot vedea și actualiza orice listă.', addMember:'Adaugă un membru', fixTitle:'Corectarea unei greșeli', fixBody:'Deschide Istoric și apasă orice zi pentru a schimba dacă ceva a fost luat.', goHistoryBtn:'Mergi la Istoric', signOut:'Deconectează-te', noList:'Nimic în lista lui {name} încă.', addFirst:'Adaugă primul element',
+      setKicker:'Preferințe', setTitle:'Setări', setLanguage:'Limbă', setTextSize:'Mărimea textului', tsStandard:'Standard', tsLarge:'Mare', tsXL:'Foarte mare', setPhotos:'Arată pozele pastilelor', onWord:'Da', offWord:'Nu',
+      editAdd:'Adaugă în listă', editEdit:'Modifică elementul', fName:'Nume', fType:'Tip', fHowMany:'Câte', fWhen:'Când', fTime:'Ora', fFor:'Pentru ce este (opțional)', fNote:'Notă specială (opțional)', cancel:'Anulează', save:'Salvează', phName:'ex. Metformin sau Exerciții pentru spate', phFor:'ex. Tensiune arterială', phNote:'ex. a se lua cu mâncare', fPhoto:'Poză (opțional)', addPhoto:'Adaugă poză', changePhoto:'Schimbă poza', removePhoto:'Elimină', typeMedicine:'Medicament', typeActivity:'Activitate / sarcină',
+      personAddTitle:'Adaugă un membru', personAddSub:'Va apărea în selector cu o listă goală pe care o poți completa.', fRelationship:'Relație', addPersonBtn:'Adaugă', phPersonName:'ex. Eleanor', phRelationship:'ex. Mama', personEditTitle:'Modifică membrul', savePersonBtn:'Salvează', editPerson:'Modifică',
+      groupMorning:'Dimineață', groupNoon:'Prânz', groupEvening:'Seară', groupBedtime:'Culcare',
+    },
+  };
+  TD = {
+    'Vitamin D':'Vitamina D', 'Calcium + D3':'Calciu + D3',
+    'Blood pressure reading':'Măsurarea tensiunii', '10-minute walk':'Plimbare de 10 minute', 'Back exercise':'Exerciții pentru spate', 'Check feet':'Verificarea picioarelor', 'Eye drops':'Picături pentru ochi',
+    'Thyroid':'Tiroidă', 'Bone health':'Sănătatea oaselor', 'Cholesterol':'Colesterol', 'Diabetes':'Diabet', 'Blood pressure':'Tensiune arterială', 'Heart':'Inimă', 'Memory':'Memorie', 'Bones':'Oase', 'Glaucoma':'Glaucom', 'Write down the numbers':'Notează valorile', 'Gentle exercise':'Exercițiu ușor', 'Physio routine':'Rutină de fizioterapie', 'Look for cuts or sores':'Caută tăieturi sau răni',
+    'Before breakfast, empty stomach':'Înainte de micul dejun, pe stomacul gol', 'With breakfast':'La micul dejun', 'With lunch':'La prânz', 'With dinner':'La cină', 'One drop each eye':'O picătură în fiecare ochi',
+    'Grandmother':'Bunica', 'Grandfather':'Bunicul', 'Mother':'Mama', 'Family':'Familie',
+  };
+  state = this.buildInitial();
+
+  buildInitial() {
+    const ss = this.props.startScreen || 'Today';
+    const view = ss === 'Login' ? 'login' : ss.toLowerCase();
+    let data = this.load();
+    if (!data) { data = this.seed(); this.save(data); }
+    const prefs = this.loadPrefs() || {};
+    return {
+      view, data, currentPersonId: data.people[0].id, managePersonId: data.people[0].id,
+      editItem: null, showPersonDialog: false, personDraft: { name:'', relation:'' },
+      histDirty: false, histSnapshot: null,
+      weekOffset: 0, showAllHistory: false, timeEditKey: null, editingPersonId: null,
+      lang: this.propLang() || prefs.lang || 'en',
+      textSize: prefs.textSize || this.props.textSize || 'Large',
+      showPhotos: prefs.showPhotos !== undefined ? prefs.showPhotos : true,
+    };
+  }
+  componentDidUpdate(prev) {
+    if (prev.startScreen !== this.props.startScreen) {
+      const ss = this.props.startScreen || 'Today';
+      this.setState({ view: ss === 'Login' ? 'login' : ss.toLowerCase() });
+    }
+    if (prev.language !== this.props.language) { const l = this.propLang(); if (l) this.setState({ lang: l }, () => this.savePrefs()); }
+  }
+  propLang() { const p = this.props.language; return (p === 'Română' || p === 'ro') ? 'ro' : (p === 'English' || p === 'en') ? 'en' : null; }
+
+  /* ---- persistence ---- */
+  load() { try { const raw = localStorage.getItem('alongside_v4'); if (!raw) return null; const o = JSON.parse(raw); return (o && o.v === 4) ? o.data : null; } catch (e) { return null; } }
+  save(data) { try { localStorage.setItem('alongside_v4', JSON.stringify({ v:4, data })); } catch (e) {} }
+  loadPrefs() { try { const raw = localStorage.getItem('alongside_prefs_v1'); return raw ? JSON.parse(raw) : null; } catch (e) { return null; } }
+  savePrefs() { try { localStorage.setItem('alongside_prefs_v1', JSON.stringify({ lang:this.state.lang, textSize:this.state.textSize, showPhotos:this.state.showPhotos })); } catch (e) {} }
+  commit(mutate, extra) { this.setState(s => Object.assign({ data: mutate(s.data) }, extra || {}), () => this.save(this.state.data)); }
+
+  /* ---- i18n ---- */
+  lg() { return (this.state && this.state.lang) || 'en'; }
+  t(key) { const l = this.lg(); const s = this.STR[l] && this.STR[l][key]; return (s != null) ? s : (this.STR.en[key] != null ? this.STR.en[key] : key); }
+  fmt(key, vars) { let s = this.t(key); if (vars) Object.keys(vars).forEach(k => { s = s.split('{' + k + '}').join(vars[k]); }); return s; }
+  td(text) { if (this.lg() === 'en' || !text) return text; return this.TD[text] || text; }
+
+  /* ---- seed data ---- */
+  seed() {
+    const people = [
+      { id:'ruth',    name:'Ruth',    initial:'R', relation:'Grandmother', tintVar:'--color-accent' },
+      { id:'george',  name:'George',  initial:'G', relation:'Grandfather', tintVar:'--color-accent-2' },
+      { id:'eleanor', name:'Eleanor', initial:'E', relation:'Mother',      tintVar:'--color-accent-700' },
+    ];
+    const schedules = {
+      ruth: [
+        { id:'r1', name:'Levothyroxine', count:1, purpose:'Thyroid',        note:'Before breakfast, empty stomach', group:'morning', time:7*60,    type:'pill' },
+        { id:'r2', name:'Vitamin D',     count:1, purpose:'Bone health',    note:'',                                group:'morning', time:8*60,    type:'pill' },
+        { id:'r3', name:'Atorvastatin',  count:1, purpose:'Cholesterol',    note:'',                                group:'evening', time:20*60,   type:'pill' },
+        { id:'ra1',name:'Blood pressure reading', count:1, purpose:'Write down the numbers', note:'', group:'morning', time:8*60+30, type:'activity' },
+        { id:'ra2',name:'10-minute walk',         count:1, purpose:'Gentle exercise',        note:'', group:'evening', time:18*60,   type:'activity' },
+      ],
+      george: [
+        { id:'g1', name:'Metformin',   count:2, purpose:'Diabetes',       note:'With breakfast', group:'morning', time:8*60,  type:'pill' },
+        { id:'g2', name:'Ramipril',    count:1, purpose:'Blood pressure', note:'',               group:'morning', time:8*60,  type:'pill' },
+        { id:'g3', name:'Aspirin',     count:1, purpose:'Heart',          note:'',               group:'morning', time:8*60,  type:'pill' },
+        { id:'g4', name:'Metformin',   count:1, purpose:'Diabetes',       note:'With lunch',     group:'noon',    time:13*60, type:'pill' },
+        { id:'g5', name:'Metformin',   count:2, purpose:'Diabetes',       note:'With dinner',    group:'evening', time:19*60, type:'pill' },
+        { id:'g6', name:'Simvastatin', count:1, purpose:'Cholesterol',    note:'',               group:'evening', time:20*60, type:'pill' },
+        { id:'ga1',name:'Back exercise', count:1, purpose:'Physio routine',        note:'', group:'morning', time:9*60,  type:'activity' },
+        { id:'ga2',name:'Check feet',    count:1, purpose:'Look for cuts or sores', note:'', group:'evening', time:20*60, type:'activity' },
+      ],
+      eleanor: [
+        { id:'e1',  name:'Donepezil',   count:1, purpose:'Memory', note:'',               group:'evening', time:20*60, type:'pill' },
+        { id:'e2',  name:'Calcium + D3',count:1, purpose:'Bones',  note:'',               group:'morning', time:8*60,  type:'pill' },
+        { id:'ea1', name:'Eye drops',   count:1, purpose:'Glaucoma', note:'One drop each eye', group:'morning', time:8*60,  type:'activity' },
+        { id:'ea2', name:'Eye drops',   count:1, purpose:'Glaucoma', note:'One drop each eye', group:'evening', time:20*60, type:'activity' },
+      ],
+    };
+    return { people, schedules, logs: this.seedLogs(people, schedules) };
+  }
+  seedLogs(people, schedules) {
+    const logs = {}; const today = new Date();
+    people.forEach(p => {
+      (schedules[p.id] || []).forEach(it => {
+        for (let i = 1; i <= 6; i++) {
+          const d = new Date(today); d.setDate(d.getDate() - i);
+          const iso = this.isoOf(d);
+          const r = (this.hash(p.id + it.id) + i * 3) % 10;
+          if (r < 8) logs[p.id + '|' + iso + '|' + it.id] = { status:'taken', mins: it.time, at:0 };
+          else if (r < 9) logs[p.id + '|' + iso + '|' + it.id] = { status:'skipped', mins: null, at:0 };
+        }
+      });
+    });
+    logs['ruth|' + this.isoOf(today) + '|r1'] = { status:'taken', mins: 7*60+12, at:0 };
+    return logs;
+  }
+  hash(s) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h; }
+
+  /* ---- time helpers ---- */
+  pad(n) { return (n < 10 ? '0' : '') + n; }
+  isoOf(d) { return d.getFullYear() + '-' + this.pad(d.getMonth() + 1) + '-' + this.pad(d.getDate()); }
+  todayISO() { return this.isoOf(new Date()); }
+  fmtMin(m) {
+    if (m == null) return '';
+    if (this.lg() === 'ro') return this.pad(Math.floor(m / 60)) + ':' + this.pad(m % 60);
+    let h = Math.floor(m / 60); const ap = h < 12 ? 'AM' : 'PM'; let hh = h % 12; if (hh === 0) hh = 12;
+    return hh + ':' + this.pad(m % 60) + ' ' + ap;
+  }
+  nowMin() { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); }
+  dowShort(d) { return (this.lg() === 'ro' ? ['Dum.','Lun.','Mar.','Mie.','Joi','Vin.','Sâm.'] : ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'])[d.getDay()]; }
+  dateLabel(d) { const mo = this.lg() === 'ro' ? ['Ian.','Feb.','Mar.','Apr.','Mai','Iun.','Iul.','Aug.','Sep.','Oct.','Noi.','Dec.'] : ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return this.dowShort(d) + ' ' + d.getDate() + ' ' + mo[d.getMonth()]; }
+  groupLabel(key) { const g = this.GROUPS.find(x => x.key === key); return g ? this.t(g.label) : key; }
+
+  /* ---- data accessors ---- */
+  person(id) { return this.state.data.people.find(p => p.id === id) || this.state.data.people[0]; }
+  scheduleOf(id) { return this.state.data.schedules[id] || []; }
+  statusOf(pid, iso, itemId) { return this.state.data.logs[pid + '|' + iso + '|' + itemId] || null; }
+
+  /* ---- icons ---- */
+  icon(name, size, color) {
+    const e = React.createElement;
+    const kids = (this.ICONS[name] || []).map((k, i) => e(k[0], Object.assign({ key:i }, k[1])));
+    return e('svg', { width:size||22, height:size||22, viewBox:'0 0 24 24', fill:'none', stroke:color||'currentColor', strokeWidth:2.75, strokeLinecap:'round', strokeLinejoin:'round', shapeRendering:'geometricPrecision' }, kids);
+  }
+
+  /* ---- mutations ---- */
+  setStatus(pid, iso, itemId, status, mins) {
+    this.commit(data => {
+      const logs = Object.assign({}, data.logs);
+      const k = pid + '|' + iso + '|' + itemId;
+      if (status == null) delete logs[k];
+      else logs[k] = { status, mins: (mins !== undefined ? mins : (status === 'taken' ? this.nowMin() : null)), at: Date.now() };
+      return Object.assign({}, data, { logs });
+    });
+  }
+  cycleCell(pid, iso, itemId) {
+    if (!this.state.histDirty) this.setState({ histDirty: true, histSnapshot: Object.assign({}, this.state.data.logs) });
+    const s = this.statusOf(pid, iso, itemId); const cur = s ? s.status : null;
+    const next = cur === null ? 'taken' : cur === 'taken' ? 'skipped' : null;
+    this.setStatus(pid, iso, itemId, next, null);
+  }
+  cancelHistChanges() {
+    const snap = this.state.histSnapshot;
+    if (!snap) return;
+    this.commit(data => Object.assign({}, data, { logs: snap }), { histDirty: false, histSnapshot: null });
+  }
+  saveHistChanges() { this.setState({ histDirty: false, histSnapshot: null }); }
+  isScheduledOn(item, date) {
+    const mode = item.endMode || (item.endDate ? 'date' : 'never');
+    if (mode === 'date' && item.endDate) { const end = new Date(item.endDate + 'T23:59:59'); if (!isNaN(end) && date > end) return false; }
+    const f = item.freq || 'daily';
+    const occurs = (d) => f === 'weekly' ? (Array.isArray(item.days) && item.days.indexOf(d.getDay()) >= 0) : f === 'monthly' ? (d.getDate() === (item.dom || 1)) : true;
+    if (!occurs(date)) return false;
+    if (mode === 'count' && item.startDate) {
+      const start = new Date(item.startDate + 'T00:00:00');
+      if (!isNaN(start) && date >= start) {
+        const cap = Number(item.endCount) || 10; const dIso = this.isoOf(date); let n = 0; const cur = new Date(start);
+        for (let i = 0; i < 800; i++) { if (cur > date) break; if (occurs(cur)) { n++; if (this.isoOf(cur) === dIso) return n <= cap; } cur.setDate(cur.getDate() + 1); }
+      }
+    }
+    return true;
+  }
+  toggleEditDay(d) { this.setState(s => { const cur = (s.editItem.days || []).slice(); const i = cur.indexOf(d); if (i >= 0) cur.splice(i, 1); else cur.push(d); return { editItem: Object.assign({}, s.editItem, { days: cur }) }; }); }
+  wdChip(d) { return (this.lg() === 'ro' ? ['Du','Lu','Ma','Mi','Jo','Vi','Sâ'] : ['Su','Mo','Tu','We','Th','Fr','Sa'])[d]; }
+  wdShort(d) { return (this.lg() === 'ro' ? ['Dum','Lun','Mar','Mie','Joi','Vin','Sâm'] : ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'])[d]; }
+  shortDate(iso) { const d = new Date(iso + 'T00:00:00'); if (isNaN(d)) return iso; const mo = this.lg() === 'ro' ? ['ian.','feb.','mar.','apr.','mai','iun.','iul.','aug.','sep.','oct.','noi.','dec.'] : ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return d.getDate() + ' ' + mo[d.getMonth()]; }
+  recurText(it) {
+    const parts = []; const f = it.freq || 'daily';
+    if (f === 'weekly') { const names = (it.days || []).slice().sort((a, b) => a - b).map(d => this.wdShort(d)).join(', '); parts.push(this.t('repWeekly') + (names ? (' · ' + names) : '')); }
+    else if (f === 'monthly') { parts.push(this.t('repMonthly') + ' · ' + this.fmt('domLabel', { n: it.dom || 1 })); }
+    if (it.endDate) parts.push(this.fmt('until', { date: this.shortDate(it.endDate) }));
+    return parts.join(' · ');
+  }
+  selectPerson(id) { this.setState({ currentPersonId: id }); }
+  setManagePerson(id) { this.setState({ managePersonId: id }); }
+  goTo(v) { this.setState({ view: v, histDirty: false, histSnapshot: null, weekOffset: 0, showAllHistory: false, timeEditKey: null }); }
+  setLang(l) { this.setState({ lang: l }, () => this.savePrefs()); }
+  setTextSize(t) { this.setState({ textSize: t }, () => this.savePrefs()); }
+  setShowPhotos(b) { this.setState({ showPhotos: b }, () => this.savePrefs()); }
+
+  openEdit(item) {
+    const d = { freq:'daily', days:[], dom:1, endMode:'never', endDate:'', endCount:10, photo:'' };
+    let ei;
+    if (item) { ei = Object.assign({}, d, item); if (!item.endMode) ei.endMode = item.endDate ? 'date' : 'never'; }
+    else ei = Object.assign({ isNew:true, name:'', count:1, purpose:'', note:'', group:'morning', type:'pill', time:8*60 }, d);
+    this.setState({ editItem: ei });
+  }
+  editField(f, v) { this.setState(s => ({ editItem: Object.assign({}, s.editItem, { [f]: v }) })); }
+  saveEdit() {
+    const ei = this.state.editItem;
+    if (!ei || !ei.name.trim()) return;
+    this.commit(data => {
+      const pid = this.state.managePersonId; const list = (data.schedules[pid] || []).slice();
+      const fields = { name: ei.name.trim(), count: Number(ei.count) || 1, purpose: ei.purpose || '', note: ei.note || '', group: ei.group, type: ei.type, time: Number(ei.time) || 8*60, freq: ei.freq || 'daily', days: Array.isArray(ei.days) ? ei.days : [], dom: Number(ei.dom) || 1, endMode: ei.endMode || 'never', endDate: ei.endDate || '', endCount: Number(ei.endCount) || 10, photo: ei.photo || '', startDate: ei.startDate || this.todayISO() };
+      if (ei.isNew) list.push(Object.assign({ id: 'x' + Date.now() }, fields));
+      else { const i = list.findIndex(x => x.id === ei.id); if (i >= 0) list[i] = Object.assign({}, list[i], fields); }
+      return Object.assign({}, data, { schedules: Object.assign({}, data.schedules, { [pid]: list }) });
+    }, { editItem: null });
+  }
+  removeItem(id) {
+    this.commit(data => {
+      const pid = this.state.managePersonId; const list = (data.schedules[pid] || []).filter(x => x.id !== id);
+      return Object.assign({}, data, { schedules: Object.assign({}, data.schedules, { [pid]: list }) });
+    });
+  }
+  openAddPerson() { this.setState({ showPersonDialog: true, editingPersonId: null, personDraft: { name:'', relation:'' } }); }
+  personField(f, v) { this.setState(s => ({ personDraft: Object.assign({}, s.personDraft, { [f]: v }) })); }
+  savePerson() {
+    const d = this.state.personDraft;
+    if (!d || !d.name.trim()) return;
+    const editingId = this.state.editingPersonId;
+    if (editingId) {
+      this.commit(data => {
+        const people = data.people.map(p => p.id === editingId ? Object.assign({}, p, { name: d.name.trim(), initial: d.name.trim()[0].toUpperCase(), relation: d.relation.trim() || p.relation }) : p);
+        return Object.assign({}, data, { people });
+      }, { showPersonDialog: false, editingPersonId: null, personDraft: { name:'', relation:'' } });
+      return;
+    }
+    const tints = ['--color-accent','--color-accent-2','--color-accent-700','--color-accent-2-700','--color-neutral-600'];
+    const id = 'p' + Date.now();
+    this.commit(data => {
+      const tint = tints[data.people.length % tints.length];
+      const person = { id, name: d.name.trim(), initial: d.name.trim()[0].toUpperCase(), relation: d.relation.trim() || 'Family', tintVar: tint };
+      return Object.assign({}, data, { people: data.people.concat([person]), schedules: Object.assign({}, data.schedules, { [id]: [] }) });
+    }, { showPersonDialog: false, personDraft: { name:'', relation:'' }, editingPersonId: null, managePersonId: id });
+  }
+  openEditPerson(p) { this.setState({ showPersonDialog: true, editingPersonId: p.id, personDraft: { name: p.name, relation: p.relation } }); }
+  removePerson(id) {
+    this.commit(data => {
+      const people = data.people.filter(p => p.id !== id);
+      const schedules = Object.assign({}, data.schedules); delete schedules[id];
+      const logs = {}; Object.keys(data.logs).forEach(k => { if (k.indexOf(id + '|') !== 0) logs[k] = data.logs[k]; });
+      return Object.assign({}, data, { people, schedules, logs });
+    });
+    this.setState(s => {
+      const ids = s.data.people.map(p => p.id);
+      return { currentPersonId: ids.indexOf(s.currentPersonId) >= 0 ? s.currentPersonId : ids[0], managePersonId: ids.indexOf(s.managePersonId) >= 0 ? s.managePersonId : ids[0] };
+    });
+  }
+
+  /* ---- view builders ---- */
+  statusText(st) {
+    if (st.status === 'taken') return st.mins != null ? this.fmt('takenAt', { time: this.fmtMin(st.mins) }) : this.t('takenWord');
+    return this.t('markedNot');
+  }
+  itemView(pid, iso, it) {
+    const st = this.statusOf(pid, iso, it.id);
+    const status = st ? st.status : null;
+    const detail = [];
+    if (it.type === 'pill') { detail.push(this.fmt('take', { n: it.count || 1 })); if (it.purpose) detail.push(this.fmt('forPurpose', { purpose: this.td(it.purpose).toLowerCase() })); }
+    else if (it.purpose) detail.push(this.td(it.purpose));
+    return {
+      id: it.id, name: this.td(it.name), detail: detail.join(' · '),
+      note: this.td(it.note), hasNote: !!it.note,
+      timeLabel: it.time != null ? this.fmtMin(it.time) : '',
+      photoTintBg: it.type === 'pill' ? 'var(--color-accent-100)' : 'var(--color-accent-2-100)',
+      photoIconEl: this.icon(it.type === 'pill' ? 'pill' : 'activity', 26, it.type === 'pill' ? 'var(--color-accent-700)' : 'var(--color-accent-2-700)'),
+      photoContentEl: it.photo ? React.createElement('img', { src: it.photo, alt: this.td(it.name), style: { width:'100%', height:'100%', objectFit:'cover' } }) : this.icon(it.type === 'pill' ? 'pill' : 'activity', 26, it.type === 'pill' ? 'var(--color-accent-700)' : 'var(--color-accent-2-700)'),
+      takenBtn: it.type === 'pill' ? this.t('btnTaken') : this.t('btnDone'),
+      didntBtn: it.type === 'pill' ? this.t('btnDidnt') : this.t('btnDidntDo'),
+      isTaken: status === 'taken', isSkipped: status === 'skipped', isPending: !status,
+      statusText: st ? this.statusText(st) : '',
+      canEditTime: status === 'taken' && !!(st && st.mins != null),
+      timeEditActive: this.state.timeEditKey === (pid + '|' + iso + '|' + it.id),
+      timeEditIdle: status === 'taken' && !!(st && st.mins != null) && this.state.timeEditKey !== (pid + '|' + iso + '|' + it.id),
+      takenTimeValue: (st && st.mins != null) ? String(Math.min(1410, Math.round(st.mins / 30) * 30)) : '',
+      timeOptions: this.timeOptions(),
+      onOpenTimeEdit: () => this.openTimeEdit(pid + '|' + iso + '|' + it.id),
+      onCloseTimeEdit: () => this.setState({ timeEditKey: null }),
+      onPickTime: (e) => this.setTakenTime(pid, iso, it.id, Number(e.target.value)),
+      onTaken: () => this.setStatus(pid, iso, it.id, 'taken'),
+      onSkip: () => this.setStatus(pid, iso, it.id, 'skipped'),
+      onChange: () => this.setStatus(pid, iso, it.id, null),
+    };
+  }
+  todaySections(pid) {
+    const iso = this.todayISO(); const nm = this.nowMin(); const all = this.scheduleOf(pid); const today = new Date();
+    const secs = [];
+    this.GROUPS.forEach(g => {
+      const its = all.filter(x => x.type === 'pill' && x.group === g.key && this.isScheduledOn(x, today)).sort((a, b) => a.time - b.time);
+      if (!its.length) return;
+      const views = its.map(it => this.itemView(pid, iso, it));
+      const pending = views.filter(v => v.isPending).length;
+      let bt, bg, fg;
+      if (pending === 0) { bt = this.t('badgeAllDone'); bg = 'var(--color-accent-2-200)'; fg = 'var(--color-accent-2-800)'; }
+      else if (nm >= g.start && nm < g.end) { bt = this.t('badgeDue'); bg = 'var(--color-accent-500)'; fg = 'var(--color-bg)'; }
+      else if (nm >= g.end) { bt = this.t('badgeOverdue'); bg = 'var(--color-accent-700)'; fg = 'var(--color-bg)'; }
+      else { bt = this.t('badgeSoon'); bg = 'var(--color-neutral-200)'; fg = 'var(--color-neutral-800)'; }
+      secs.push({ key:g.key, tone: pending === 0 ? 'done' : (nm >= g.start && nm < g.end) ? 'due' : (nm >= g.end ? 'over' : 'soon'), label:this.t(g.label), iconEl:this.icon(g.key, 20, 'currentColor'), iconBg:'var(--color-accent-2-100)', iconFg:'var(--color-accent-2-700)', hasBadge:true, badgeText:bt, badgeBg:bg, badgeFg:fg, hasReminder:true, reminderTime:this.fmtMin(its[0].time), reminderLabel:this.fmt('reminderWord', { time:this.fmtMin(its[0].time) }), items:views, pending });
+    });
+    const acts = all.filter(x => x.type === 'activity' && this.isScheduledOn(x, today)).sort((a, b) => a.time - b.time);
+    if (acts.length) secs.push({ key:'acts', label:this.t('secActivities'), iconEl:this.icon('activity', 20, 'currentColor'), iconBg:'var(--color-accent-100)', iconFg:'var(--color-accent-700)', hasBadge:false, hasReminder:false, items:acts.map(it => this.itemView(pid, iso, it)) });
+    return secs;
+  }
+  summary(pid) {
+    const iso = this.todayISO(); const pills = this.scheduleOf(pid).filter(x => x.type === 'pill' && this.isScheduledOn(x, new Date()));
+    const total = pills.length; let done = 0, pending = 0;
+    pills.forEach(it => { const s = this.statusOf(pid, iso, it.id); if (s && s.status === 'taken') done++; else if (!s) pending++; });
+    const skipped = total - done - pending; const pct = total ? done / total : 0;
+    const C = 2 * Math.PI * 30; const e = React.createElement;
+    const ringEl = e('svg', { width:76, height:76, viewBox:'0 0 76 76' },
+      e('circle', { key:'b', cx:38, cy:38, r:30, fill:'none', stroke:'var(--color-neutral-300)', strokeWidth:8 }),
+      e('circle', { key:'f', cx:38, cy:38, r:30, fill:'none', stroke:'var(--color-accent-2-500)', strokeWidth:8, strokeLinecap:'round', strokeDasharray:C, strokeDashoffset:C * (1 - pct), transform:'rotate(-90 38 38)' })
+    );
+    return { done, total, ringEl, fraction: done + '/' + total,
+      headline: total === 0 ? this.t('sumNothing') : pending === 0 ? this.t('sumAllDone') : this.fmt(pending === 1 ? 'sumPillLeft' : 'sumPillsLeft', { n: pending }),
+      subline: total === 0 ? this.t('sumAddManage') : (this.fmt('sumTaken', { done, total }) + (skipped > 0 ? (' · ' + this.fmt('sumNotTaken', { n: skipped })) : '')) };
+  }
+  reminder(secs) {
+    const l = this.lg();
+    for (const s of secs) {
+      if (s.key === 'acts' || !s.pending) continue;
+      const gname = l === 'ro' ? s.label.toLowerCase() : s.label;
+      if (s.tone === 'over') return { text: this.fmt('remOverdue', { group: gname }), bg:'var(--color-accent-100)', fg:'var(--color-accent-800)' };
+      if (s.tone === 'due') return { text: this.fmt('remDue', { group: gname }), bg:'var(--color-accent-100)', fg:'var(--color-accent-800)' };
+      return { text: this.fmt('remNext', { group: gname, time: s.reminderTime }), bg:'var(--color-neutral-200)', fg:'var(--color-neutral-800)' };
+    }
+    return { text: this.t('remAllDone'), bg:'var(--color-accent-2-100)', fg:'var(--color-accent-2-800)' };
+  }
+  historyGrid(pid) {
+    const anchor = new Date(); anchor.setDate(anchor.getDate() + this.state.weekOffset * 7);
+    const todayIso = this.todayISO(); const now = new Date(); const days = [];
+    for (let i = 6; i >= 0; i--) { const d = new Date(anchor); d.setDate(d.getDate() - i); const iso = this.isoOf(d); const isT = iso === todayIso; days.push({ iso, dow:this.dowShort(d), dom:d.getDate(), domColor: isT ? 'var(--color-accent-700)' : 'var(--color-text)', domWeight: isT ? '700' : '400' }); }
+    const rows = this.scheduleOf(pid).map(it => ({
+      name: this.td(it.name),
+      cells: days.map(day => {
+        const dd = new Date(day.iso + 'T12:00:00');
+        if (dd > now) return { symbol:'', bg:'transparent', fg:'transparent', cursor:'default', fs:'.9em', onClick: undefined };
+        if (!this.isScheduledOn(it, dd)) return { symbol:'N/A', bg:'var(--color-neutral-100)', fg:'var(--color-neutral-400)', cursor:'default', fs:'.6em', onClick: undefined };
+        const s = this.statusOf(pid, day.iso, it.id);
+        let v;
+        if (s && s.status === 'taken') v = { symbol:'✓', bg:'var(--color-accent-2-100)', fg:'var(--color-accent-2-700)' };
+        else if (s && s.status === 'skipped') v = { symbol:'✕', bg:'var(--color-accent-100)', fg:'var(--color-accent-700)' };
+        else v = { symbol:'–', bg:'var(--color-neutral-200)', fg:'var(--color-neutral-500)' };
+        return Object.assign({ cursor:'pointer', fs:'.9em', onClick: () => this.cycleCell(pid, day.iso, it.id) }, v);
+      }),
+    }));
+    return { days, rows };
+  }
+  prevWeek() { this.setState(s => ({ weekOffset: s.weekOffset - 1 })); }
+  nextWeek() { this.setState(s => ({ weekOffset: Math.min(0, s.weekOffset + 1) })); }
+  weekCaption() {
+    const off = this.state.weekOffset;
+    if (off === 0) return this.t('weekThis');
+    if (off === -1) return this.t('weekLast');
+    const anchor = new Date(); anchor.setDate(anchor.getDate() + off * 7);
+    const start = new Date(anchor); start.setDate(start.getDate() - 6);
+    return this.shortDate(this.isoOf(start)) + ' – ' + this.shortDate(this.isoOf(anchor));
+  }
+  openTimeEdit(key) { this.setState({ timeEditKey: key }); }
+  setTakenTime(pid, iso, itemId, mins) {
+    this.commit(data => { const logs = Object.assign({}, data.logs); const k = pid + '|' + iso + '|' + itemId; const cur = logs[k] || { status:'taken', at:0 }; logs[k] = Object.assign({}, cur, { status:'taken', mins, at: Date.now() }); return Object.assign({}, data, { logs }); }, { timeEditKey: null });
+  }
+  openAllHistory() { this.setState({ showAllHistory: true }); }
+  closeAllHistory() { this.setState({ showAllHistory: false }); }
+  allHistory(pid) {
+    const items = this.scheduleOf(pid); const out = []; const today = new Date();
+    for (let i = 0; i < 30; i++) {
+      const d = new Date(today); d.setDate(d.getDate() - i); const iso = this.isoOf(d); const rows = [];
+      items.forEach(it => {
+        if (!this.isScheduledOn(it, d)) return;
+        const s = this.statusOf(pid, iso, it.id); let mark, bg, fg, label;
+        if (s && s.status === 'taken') { mark='✓'; bg='var(--color-accent-2-100)'; fg='var(--color-accent-2-700)'; label = s.mins != null ? this.fmt('takenAt', { time:this.fmtMin(s.mins) }) : this.t('takenWord'); }
+        else if (s && s.status === 'skipped') { mark='✕'; bg='var(--color-accent-100)'; fg='var(--color-accent-700)'; label = this.t('legendNot'); }
+        else { mark='–'; bg='var(--color-neutral-200)'; fg='var(--color-neutral-500)'; label = this.t('legendNo'); }
+        rows.push({ name:this.td(it.name), timeLabel: it.time != null ? this.fmtMin(it.time) : '', mark, bg, fg, statusLabel: label });
+      });
+      if (rows.length) out.push({ heading: this.dateLabel(d), isToday: i === 0, rows });
+    }
+    return out;
+  }
+  adherenceStat(pid) {
+    const items = this.scheduleOf(pid); const today = new Date(); let sched = 0, taken = 0;
+    for (let i = 0; i < 7; i++) { const d = new Date(today); d.setDate(d.getDate() - i); const iso = this.isoOf(d); items.forEach(it => { if (!this.isScheduledOn(it, d)) return; sched++; const s = this.statusOf(pid, iso, it.id); if (s && s.status === 'taken') taken++; }); }
+    return { pct: sched ? Math.round(taken / sched * 100) : 0, taken, total: sched, label: this.fmt('ofDoses', { n: sched }) };
+  }
+  recentMisses(pid) {
+    const items = this.scheduleOf(pid); const today = new Date(); const out = [];
+    for (let i = 1; i <= 6 && out.length < 5; i++) {
+      const d = new Date(today); d.setDate(d.getDate() - i); const iso = this.isoOf(d); const dow = this.dowShort(d);
+      items.forEach(it => {
+        if (out.length >= 5) return;
+        if (!this.isScheduledOn(it, d)) return;
+        const s = this.statusOf(pid, iso, it.id);
+        const when = dow + ' ' + this.groupLabel(it.group).toLowerCase();
+        if (s && s.status === 'skipped') out.push({ name:this.td(it.name), when, kind:this.t('missNot'), mark:'✕', bg:'var(--color-accent-100)', fg:'var(--color-accent-700)' });
+        else if (!s) out.push({ name:this.td(it.name), when, kind:this.t('missNo'), mark:'–', bg:'var(--color-neutral-200)', fg:'var(--color-neutral-600)' });
+      });
+    }
+    return out.slice(0, 5);
+  }
+  metaLine(it) {
+    if (it.type === 'pill') { const p = [this.fmt('take', { n: it.count || 1 }), this.groupLabel(it.group)]; if (it.purpose) p.push(this.td(it.purpose)); return p.join(' · '); }
+    return this.t('typeActivity').split(' /')[0] + ' · ' + this.groupLabel(it.group);
+  }
+  manageList(pid) {
+    return this.scheduleOf(pid).map(it => ({
+      name: this.td(it.name), meta: this.metaLine(it), recur: this.recurText(it), hasRecur: !!this.recurText(it),
+      tintBg: it.type === 'pill' ? 'var(--color-accent-100)' : 'var(--color-accent-2-100)',
+      photoContentEl: it.photo ? React.createElement('img', { src: it.photo, alt: this.td(it.name), style: { width:'100%', height:'100%', objectFit:'cover' } }) : this.icon(it.type === 'pill' ? 'pill' : 'activity', 22, it.type === 'pill' ? 'var(--color-accent-700)' : 'var(--color-accent-2-700)'),
+      onEdit: () => this.openEdit(it), onRemove: () => this.removeItem(it.id),
+    }));
+  }
+  chips(activeId, isManage) {
+    return this.state.data.people.map(p => ({
+      id: p.id, name: p.name, initial: p.initial, tint: 'var(' + p.tintVar + ')',
+      borderColor: p.id === activeId ? 'var(--color-accent)' : 'var(--color-divider)',
+      bg: p.id === activeId ? 'var(--color-surface)' : 'transparent',
+      onClick: () => (isManage ? this.setManagePerson(p.id) : this.selectPerson(p.id)),
+    }));
+  }
+  timeOptions() { const o = []; for (let m = 0; m < 24*60; m += 30) o.push({ value:String(m), label:this.fmtMin(m) }); return o; }
+  navItems() {
+    return [ { key:'today', label:'navToday', ic:'today' }, { key:'history', label:'navHistory', ic:'calendar' }, { key:'manage', label:'navManage', ic:'settings' }, { key:'settings', label:'navSettings', ic:'gear' } ].map(n => ({
+      label: this.t(n.label), iconEl: this.icon(n.ic, 24, 'currentColor'),
+      color: this.state.view === n.key ? 'var(--color-accent)' : 'var(--color-neutral-600)',
+      onClick: () => this.goTo(n.key),
+    }));
+  }
+  optStyle(active) { return active ? { bg:'var(--color-accent)', fg:'var(--color-bg)', border:'var(--color-accent)' } : { bg:'transparent', fg:'var(--color-text)', border:'var(--color-divider)' }; }
+
+  renderVals() {
+    const S = this.state, P = this.props;
+    const rootFont = ({ 'Standard':17, 'Large':19, 'Extra large':22 })[S.textSize] || 19;
+    const showPhotos = S.showPhotos !== false;
+    const view = S.view; const isLogin = view === 'login';
+    const pid = S.currentPersonId; const cp = this.person(pid);
+    const h = new Date().getHours();
+    const greeting = h < 12 ? this.t('greetMorning') : h < 17 ? this.t('greetAfternoon') : this.t('greetEvening');
+
+    const sections = this.todaySections(pid);
+    const mp = this.person(S.managePersonId);
+    const adh = this.adherenceStat(pid);
+    const people = S.data.people;
+    const L = Object.assign({}, this.STR.en, this.STR[this.lg()]);
+    const tsSizes = { 'Standard':'.8em', 'Large':'.92em', 'Extra large':'1.02em' };
+
+    return {
+      L, rootFont, showPhotos,
+      headingFont: this.lg() === 'ro' ? '"Baloo 2", "Figtree", system-ui, sans-serif' : '"Caprasimo", system-ui, sans-serif',
+      isLogin, isApp: !isLogin, isToday: view === 'today', isHistory: view === 'history', isManage: view === 'manage', isSettings: view === 'settings',
+      brandIcon: this.icon('pill', 30, 'currentColor'),
+      checkIcon: this.icon('check', 22, 'currentColor'),
+      xIcon: this.icon('x', 22, 'currentColor'),
+      clockMini: this.icon('clock', 13, 'currentColor'),
+      bellIcon: this.icon('bell', 16, 'currentColor'),
+      bellMini: this.icon('bell', 12, 'currentColor'),
+      legendCheck: this.icon('check', 12, 'currentColor'),
+      legendX: this.icon('x', 12, 'currentColor'),
+      legendDash: this.icon('minus', 12, 'currentColor'),
+      undoIcon: this.icon('rotate', 18, 'currentColor'),
+      chevLeft: this.icon('chevronLeft', 22, 'currentColor'), chevRight: this.icon('chevronRight', 22, 'currentColor'),
+      cameraIcon: this.icon('camera', 26, 'var(--color-accent-700)'),
+      histDirty: S.histDirty, onCancelHist: () => this.cancelHistChanges(), onSaveHist: () => this.saveHistChanges(),
+      globeIcon: this.icon('globe', 18, 'currentColor'),
+      plusIcon: this.icon('plus', 20, 'currentColor'),
+      pencilIcon: this.icon('pencil', 18, 'currentColor'),
+      trashIcon: this.icon('trash', 18, 'currentColor'),
+      navItems: this.navItems(),
+      onSignIn: () => this.goTo('today'), onSignOut: () => this.goTo('login'),
+      goHistory: () => this.goTo('history'),
+      stop: (e) => e.stopPropagation(),
+
+      currentPerson: cp,
+      todayKicker: greeting + ' · ' + this.dateLabel(new Date()),
+      todayTitle: this.fmt('daysTitle', { name: cp.name }),
+      personChips: this.chips(pid, false),
+      summary: this.summary(pid),
+      reminder: this.reminder(sections),
+      sections, hasSections: sections.length > 0, noSections: sections.length === 0,
+      noListMsg: this.fmt('noList', { name: cp.name }),
+
+      histTitle: this.fmt('weekTitle', { name: cp.name }),
+      grid: this.historyGrid(pid),
+      weekCaption: this.weekCaption(), nextDisabled: S.weekOffset >= 0,
+      onPrevWeek: () => this.prevWeek(), onNextWeek: () => this.nextWeek(),
+      adherence: adh.pct, doseTaken: adh.taken, doseLabel: this.fmt('weekTaken', { n: adh.total }),
+      recentMisses: this.recentMisses(pid), hasMisses: this.recentMisses(pid).length > 0,
+      showAllHistory: S.showAllHistory, allHistory: this.allHistory(pid), allHistEmpty: this.allHistory(pid).length === 0,
+      allHistTitle: this.t('allHistTitle'), allHistSub: cp.name + ' · ' + this.t('last30'),
+      onOpenAllHistory: () => this.openAllHistory(), onCloseAllHistory: () => this.closeAllHistory(),
+
+      manageChips: this.chips(S.managePersonId, true),
+      managePerson: mp, manageListTitle: this.fmt('listOf', { name: mp.name }), manageList: this.manageList(S.managePersonId),
+      familyList: people.map(p => ({ name:p.name, initial:p.initial, tint:'var(' + p.tintVar + ')', relation:this.td(p.relation), canRemove: people.length > 1, onEdit: () => this.openEditPerson(p), onRemove: () => this.removePerson(p.id) })),
+      onAddItem: () => this.openEdit(null), onAddPerson: () => this.openAddPerson(),
+
+      langOptions: [ { value:'en', label:'English' }, { value:'ro', label:'Română' } ].map(o => Object.assign({ label:o.label, onClick:() => this.setLang(o.value) }, this.optStyle(S.lang === o.value))),
+      textSizeOptions: [ ['Standard','tsStandard'], ['Large','tsLarge'], ['Extra large','tsXL'] ].map(pair => Object.assign({ label:this.t(pair[1]), size:tsSizes[pair[0]], onClick:() => this.setTextSize(pair[0]) }, this.optStyle(S.textSize === pair[0]))),
+      photoOptions: [ [true,'onWord'], [false,'offWord'] ].map(pair => Object.assign({ label:this.t(pair[1]), onClick:() => this.setShowPhotos(pair[0]) }, this.optStyle(showPhotos === pair[0]))),
+
+      editItem: S.editItem, showEditDialog: !!S.editItem, editTitle: S.editItem && S.editItem.isNew ? this.t('editAdd') : this.t('editEdit'),
+      groupOptions: this.GROUPS.map(g => ({ value:g.key, label:this.t(g.label) })),
+      typeOptions: [ { value:'pill', label:this.t('typeMedicine') }, { value:'activity', label:this.t('typeActivity') } ],
+      timeOptions: this.timeOptions(),
+      onEditName: e => this.editField('name', e.target.value),
+      onEditCount: e => this.editField('count', e.target.value),
+      onEditPurpose: e => this.editField('purpose', e.target.value),
+      onEditNote: e => this.editField('note', e.target.value),
+      onEditGroup: e => this.editField('group', e.target.value),
+      onEditType: e => this.editField('type', e.target.value),
+      onEditTime: e => this.editField('time', Number(e.target.value)),
+      onEditFreq: e => this.editField('freq', e.target.value),
+      onEditDom: e => this.editField('dom', Number(e.target.value)),
+      onEditEnd: e => this.editField('endDate', e.target.value),
+      freqOptions: [['daily','repDaily'],['weekly','repWeekly'],['monthly','repMonthly']].map(p => ({ value:p[0], label:this.t(p[1]) })),
+      domOptions: Array.from({ length:31 }, (_, i) => ({ value:String(i+1), label:String(i+1) })),
+      editTime: S.editItem ? String(S.editItem.time) : '',
+      editDom: S.editItem ? String(S.editItem.dom || 1) : '',
+      editIsWeekly: !!(S.editItem && S.editItem.freq === 'weekly'),
+      editIsMonthly: !!(S.editItem && S.editItem.freq === 'monthly'),
+      editHasPhoto: !!(S.editItem && S.editItem.photo),
+      editPhotoEl: (S.editItem && S.editItem.photo) ? React.createElement('img', { src: S.editItem.photo, alt: '', style: { width:'100%', height:'100%', objectFit:'cover' } }) : this.icon('camera', 26, 'var(--color-accent-700)'),
+      editPhotoBtnLabel: (S.editItem && S.editItem.photo) ? L.changePhoto : L.addPhoto,
+      editEndIsDate: !!(S.editItem && S.editItem.endMode === 'date'),
+      editEndIsCount: !!(S.editItem && S.editItem.endMode === 'count'),
+      editEndCount: S.editItem ? String(S.editItem.endCount || 10) : '10',
+      endModeOptions: [['never','endNever'],['date','endOnDate'],['count','endAfter']].map(p => Object.assign({ label:this.t(p[1]), onClick:() => this.editField('endMode', p[0]) }, this.optStyle(!!(S.editItem && S.editItem.endMode === p[0])))),
+      onEditEndCount: e => this.editField('endCount', Math.max(1, Number(e.target.value) || 1)),
+      onEditPhoto: e => { const f = e.target.files && e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = () => this.editField('photo', r.result); r.readAsDataURL(f); },
+      onRemoveEditPhoto: () => this.editField('photo', ''),
+      weekdayChips: [0,1,2,3,4,5,6].map(d => Object.assign({ label:this.wdChip(d), onClick:() => this.toggleEditDay(d) }, this.optStyle((((S.editItem && S.editItem.days) || []).indexOf(d)) >= 0))),
+      onSaveEdit: () => this.saveEdit(), onCancelEdit: () => this.setState({ editItem: null }),
+
+      showPersonDialog: S.showPersonDialog, personDraft: S.personDraft,
+      personIsAdd: !S.editingPersonId, personDialogTitle: S.editingPersonId ? this.t('personEditTitle') : this.t('personAddTitle'), personSaveLabel: S.editingPersonId ? this.t('savePersonBtn') : this.t('addPersonBtn'),
+      onPersonName: e => this.personField('name', e.target.value),
+      onPersonRelation: e => this.personField('relation', e.target.value),
+      onSavePerson: () => this.savePerson(), onCancelPerson: () => this.setState({ showPersonDialog: false, editingPersonId: null }),
+    };
+  }
+}
+</script>
+</body>
+</html>
