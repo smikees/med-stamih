@@ -59,6 +59,7 @@
   /* ---------------- data ---------------- */
   async function loadProfiles() { state.profiles = (await api('/api/profiles.php?action=list')).profiles || []; if (!state.sel && state.profiles[0]) state.sel = state.profiles[0].id; if (!state.manageSel && state.profiles[0]) state.manageSel = state.profiles[0].id; }
   const dataCache = {};   // pid -> { items, logs } for today; makes profile-switching instant
+  const chanCache = {};   // pid -> [channels]
   async function loadDay(pid) {
     if (!pid) { state.items = []; state.logs = {}; return; }
     const [it, dy] = await Promise.all([api('/api/items.php?action=list&profile=' + pid), api('/api/logs.php?action=day&profile=' + pid + '&date=' + todayISO())]);
@@ -259,7 +260,43 @@
         el('button', { class: 'btn btn-secondary btn-icon', 'aria-label': t('editPerson'), onclick: () => openEditor(it), html: M.icon('pencil', 18) }),
         el('button', { class: 'btn btn-secondary btn-icon', 'aria-label': t('removePhoto'), onclick: () => removeItem(it), html: M.icon('trash', 18) })));
     });
+    c.append(notifSection(state.manageSel));
     screen.append(c);
+  }
+  /* ---- Notifications (Telegram) ---- */
+  function notifSection(pid) {
+    const wrap = el('div', { style: 'margin-top:22px' });
+    wrap.append(el('h2', { class: 'display', style: 'font-size:1.12em;margin:0 0 4px' }, t('notifTitle')),
+      el('p', { class: 'muted', style: 'margin:0 0 10px' }, t('notifNote')));
+    const chans = chanCache[pid];
+    if (chans === undefined) { fetchChannels(pid); wrap.append(el('div', { class: 'sk', style: 'height:56px' })); return wrap; }
+    if (!chans.length) wrap.append(el('p', { class: 'muted', style: 'margin:0 0 8px' }, t('notifNone')));
+    chans.forEach(ch => wrap.append(el('div', { class: 'mrow' },
+      el('span', { class: 'pavatar', style: 'background:var(--color-accent-2-600);font-size:1.1em' }, '✈'),
+      el('div', { style: 'flex:1;min-width:0' }, el('div', { style: 'font-weight:700' }, ch.label || 'Telegram'), el('div', { class: 'meta' }, ch.verified ? t('verifiedWord') : t('pendingWord'))),
+      el('button', { class: 'btn btn-secondary btn-icon', 'aria-label': t('unlinkWord'), onclick: () => unlinkChan(pid, ch.id), html: M.icon('trash', 18) }))));
+    if (chans.filter(c => c.verified).length < 3)
+      wrap.append(el('button', { class: 'btn btn-secondary btn-block', style: 'margin-top:6px', onclick: () => linkTelegram(pid), html: '✈ ' + esc(t('linkTelegram')) }));
+    return wrap;
+  }
+  async function fetchChannels(pid) { try { const r = await api('/api/channels.php?action=list&profile=' + pid); chanCache[pid] = r.channels || []; if (state.tab === 'manage') render(); } catch (e) { chanCache[pid] = []; } }
+  async function unlinkChan(pid, id) { try { await api('/api/channels.php?action=unlink', { method: 'POST', body: { profile_id: pid, id } }); } catch (e) {} chanCache[pid] = undefined; render(); }
+  async function linkTelegram(pid) {
+    let r; try { r = await api('/api/channels.php?action=link', { method: 'POST', body: { profile_id: pid } }); } catch (e) { window.alert(t('notifMax')); return; }
+    chanCache[pid] = undefined;
+    try { window.open(r.deep_link, '_blank'); } catch (e) {}
+    linkHintDialog(pid, r.deep_link);
+  }
+  function linkHintDialog(pid, deep) {
+    removeDialogs();
+    const bd = el('div', { class: 'dialog-backdrop', onclick: (ev) => { if (ev.target === bd) removeDialogs(); } });
+    const dc = el('div', { class: 'dialog' },
+      el('div', { class: 'dialog-title display' }, t('linkTelegram')),
+      el('div', { class: 'dialog-body' }, el('p', {}, t('linkHint'))),
+      el('div', { class: 'dialog-actions' },
+        el('a', { class: 'btn btn-secondary', href: deep, target: '_blank' }, t('linkOpen')),
+        el('button', { class: 'btn btn-primary', onclick: () => { removeDialogs(); render(); } }, t('refreshWord'))));
+    bd.append(dc); document.body.append(bd);
   }
   function renderManageMembers(screen) {   // Family members sub-tab
     head(screen, t('mngKicker'), t('mngTitle'));

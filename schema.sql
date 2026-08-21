@@ -119,3 +119,6 @@ CREATE TABLE IF NOT EXISTS notif_log (
   UNIQUE KEY uq_notif (profile_id, item_id, d, kind),
   KEY k_profile (profile_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 'snooze' recorded on the due row when the user taps Amână (idempotent to re-run).
+ALTER TABLE notif_log MODIFY response ENUM('taken','skipped','snooze') DEFAULT NULL;
