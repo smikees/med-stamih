@@ -23,6 +23,7 @@
     weekOffset: 0,                 // History: 0 = this week, negative = past
     histDirty: false, histSnap: null,
     dayNote: '',                   // per-day note for the currently-loaded profile+today
+    exportSel: null,               // Settings: which profile to export (defaults to Today's)
   };
   const SIZES = { Standard: 17, Large: 19, 'Extra large': 22 };
   const t = (k) => (window.STR[state.lang] && window.STR[state.lang][k]) ?? (window.STR.en[k] ?? k);
@@ -209,30 +210,39 @@
   function itemCard(it) {
     const l = state.logs[it.id]; const isAct = it.type === 'activity';
     const av = state.showPhotos ? itemAvatar(it, 'itc-av', isAct, 26) : null;
-    if (av && photoSrc(it)) { av.style.cursor = 'zoom-in'; av.setAttribute('role', 'button'); av.onclick = () => openPhoto(it); }
     const detail = isAct ? (it.purpose || '') : (fmt('take', { n: it.count }) + (it.purpose ? ' · ' + fmt('forPurpose', { purpose: (it.purpose || '').toLowerCase() }) : ''));
     const body = el('div', { style: 'flex:1;min-width:0' },
       el('div', { class: 'itc-top' }, el('span', { class: 'itc-name' }, it.name), el('span', { class: 'itc-time muted', html: M.icon('clock', 14, 'currentColor', 2.4) + ' ' + esc(fmtMin(it.time)) })),
       detail ? el('div', { class: 'itc-detail muted' }, detail) : null,
       it.note ? el('span', { class: 'itc-note' }, it.note) : null,
       actionZone(it, l, isAct),
-      l ? noteRow(it, l) : null);
+      l ? controlsRow(it, l, isAct) : null);
     return el('div', { class: 'card itemcard elev-sm' }, av, body);
   }
-  function noteRow(it, l) {
-    const wrap = el('div', { class: 'itc-noterow' });
-    const edit = () => {
-      const inp = el('input', { class: 'input', value: l.note || '', placeholder: t('notePh'), maxlength: 300 });
-      let saved = false;
-      const save = () => { if (saved) return; saved = true; const v = inp.value.trim(); setLog(it.id, l.status, l.taken_min ?? null, v || null); };
-      inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); inp.blur(); } });
-      inp.addEventListener('blur', save);
-      wrap.innerHTML = ''; wrap.append(inp); inp.focus();
-    };
-    if (l.note) wrap.append(el('span', { class: 'itc-lognote', onclick: edit, html: M.icon('note', 13, 'currentColor', 2) + ' ' + esc(l.note) }),
-      el('button', { class: 'linklike small', onclick: edit }, t('btnChange')));
-    else wrap.append(el('button', { class: 'linklike', onclick: edit, html: M.icon('note', 13, 'currentColor', 2) + ' ' + esc(t('addNote')) }));
-    return wrap;
+  function miniLink(iconName, label, onclick) {
+    return el('button', { class: 'linklike ml', onclick }, el('span', { class: 'ml-ic', html: M.icon(iconName, 13, 'currentColor', 2.2) }), el('span', { class: 'ml-tx' }, label));
+  }
+  function controlsRow(it, l, isAct) {   // edit-time + note on one line
+    const row = el('div', { class: 'itc-linkrow' });
+    if (l.status === 'taken') row.append(miniLink('clock', t('editTime'), (ev) => toggleTimeEdit(it, ev)));
+    if (l.note) row.append(el('button', { class: 'linklike ml', onclick: (ev) => toggleNoteEdit(it, l, ev) }, el('span', { class: 'ml-ic', html: M.icon('note', 13, 'currentColor', 2.2) }), el('span', { class: 'ml-tx' }, l.note)));
+    else row.append(miniLink('note', t('addNote'), (ev) => toggleNoteEdit(it, l, ev)));
+    return row;
+  }
+  function toggleTimeEdit(it, ev) {
+    const row = ev.target.closest('.itc-linkrow'); const ex = row.parentElement.querySelector('.timeedit'); if (ex) { ex.remove(); return; }
+    row.parentElement.querySelectorAll('.noteedit').forEach(n => n.remove());
+    const sel = el('select', { class: 'input' }); for (let m = 0; m < 1440; m += 30) sel.append(el('option', { value: m, selected: Math.abs((state.logs[it.id].taken_min ?? it.time) - m) < 15 ? 'selected' : null }, fmtMin(m)));
+    sel.addEventListener('change', () => setLog(it.id, 'taken', parseInt(sel.value, 10)));
+    row.after(el('div', { class: 'timeedit' }, sel));
+  }
+  function toggleNoteEdit(it, l, ev) {
+    const row = ev.target.closest('.itc-linkrow'); const ex = row.parentElement.querySelector('.noteedit'); if (ex) { ex.remove(); return; }
+    row.parentElement.querySelectorAll('.timeedit').forEach(n => n.remove());
+    const ta = el('textarea', { class: 'input noteedit-ta', rows: 2, placeholder: t('notePh'), maxlength: 300 }); ta.value = l.note || '';
+    let saved = false; const save = () => { if (saved) return; saved = true; const v = ta.value.trim(); setLog(it.id, l.status, l.taken_min ?? null, v || null); };
+    ta.addEventListener('blur', save);
+    row.after(el('div', { class: 'noteedit' }, ta)); ta.focus();
   }
   function dayNoteCard() {
     const wrap = el('div', { class: 'card daynote elev-sm' }, el('div', { class: 'dn-label', html: M.icon('note', 16, 'currentColor', 2.2) + ' ' + esc(t('noteToday')) }));
@@ -249,18 +259,11 @@
       el('button', { class: 'btn btn-secondary', onclick: () => setLog(it.id, 'skipped'), html: M.icon('x', 18, 'currentColor', 2.6) + ' ' + esc(t(isAct ? 'btnDidntDo' : 'btnDidnt')) }));
     if (l.status === 'taken') {
       const label = l.taken_min != null ? fmt(isAct ? 'doneAt' : 'takenAt', { time: fmtMin(l.taken_min) }) : t(isAct ? 'doneWord' : 'takenWord');
-      return el('div', {}, el('div', { class: 'statebar sb-taken' }, el('span', { html: M.icon('check', 18, 'var(--color-accent-2-700)', 2.6) }), el('span', { style: 'flex:1' }, label),
-        el('button', { class: 'btn btn-ghost small', onclick: () => setLog(it.id, null) }, t('btnChange'))),
-        el('button', { class: 'linklike', onclick: (e) => editTime(it, e) }, t('editTime')));
+      return el('div', { class: 'statebar sb-taken' }, el('span', { html: M.icon('check', 18, 'var(--color-accent-2-700)', 2.6) }), el('span', { style: 'flex:1' }, label),
+        el('button', { class: 'btn btn-ghost small', onclick: () => setLog(it.id, null) }, t('btnChange')));
     }
     return el('div', { class: 'statebar sb-skip' }, el('span', { html: M.icon('x', 18, 'var(--color-accent-700)', 2.6) }), el('span', { style: 'flex:1' }, t(isAct ? 'markedNotAct' : 'markedNot')),
       el('button', { class: 'btn btn-ghost small', onclick: () => setLog(it.id, null) }, t('btnChange')));
-  }
-  function editTime(it, e) {
-    const wrap = e.target.closest('.itemcard'); if (wrap.querySelector('.timeedit')) { wrap.querySelector('.timeedit').remove(); return; }
-    const sel = el('select', { class: 'input' }); for (let m = 0; m < 1440; m += 30) sel.append(el('option', { value: m, selected: Math.abs((state.logs[it.id].taken_min ?? it.time) - m) < 15 ? 'selected' : null }, fmtMin(m)));
-    sel.addEventListener('change', () => setLog(it.id, 'taken', parseInt(sel.value, 10)));
-    e.target.after(el('div', { class: 'timeedit' }, sel));
   }
 
   /* ---------------- Manage (sub-tabs: Lists / Family members) ---------------- */
@@ -419,6 +422,7 @@
       span.style.backgroundImage = 'url(' + src + ')'; span.style.backgroundSize = 'cover'; span.style.backgroundPosition = 'center';
       // thin type-colored border so pill vs activity stays readable once a photo hides the icon
       span.style.border = '2.5px solid ' + (isAct ? 'var(--color-accent-2-700)' : 'var(--color-accent-700)');
+      span.style.cursor = 'zoom-in'; span.setAttribute('role', 'button'); span.onclick = () => openPhoto(it);
     }
     return span;
   }
@@ -447,7 +451,7 @@
     const fileI = el('input', { type: 'file', accept: 'image/*', style: 'display:none' });
     const cur = e.photoPreview || photoSrc(e);
     const prev = el('div', { class: 'photo-prev' + (cur ? '' : ' empty') });
-    if (cur) { prev.style.backgroundImage = 'url(' + cur + ')'; } else { prev.textContent = '📷'; }
+    if (cur) { prev.style.backgroundImage = 'url(' + cur + ')'; } else { prev.innerHTML = M.icon('image', 30, 'var(--color-neutral-400, #b8ab9c)', 2); }
     prev.onclick = () => fileI.click();
     fileI.addEventListener('change', async () => {
       const f = fileI.files[0]; if (!f) return;
@@ -527,7 +531,7 @@
     const seg = el('div', { class: 'daytoggles' });
     [['never', 'endNever'], ['date', 'endOnDate'], ['count', 'endAfter']].forEach(([m, k]) => seg.append(el('button', { class: 'btn ' + (e.endMode === m ? 'btn-primary' : 'btn-secondary') + ' small', onclick: () => { e.endMode = m; renderEditor(); } }, t(k))));
     wrap.append(seg);
-    if (e.endMode === 'date') { const di = el('input', { class: 'input', style: 'margin-top:8px', inputmode: 'numeric', value: isoToDMY(e.endDate), placeholder: state.lang === 'ro' ? 'zz/ll/aaaa' : 'dd/mm/yyyy' }); di.addEventListener('input', () => { e.endDate = dmyToIso(di.value); }); wrap.append(di); }
+    if (e.endMode === 'date') { const di = el('input', { class: 'input', type: 'date', style: 'margin-top:8px', value: e.endDate || '', min: todayISO() }); di.addEventListener('change', () => { e.endDate = di.value || null; }); wrap.append(di); }
     if (e.endMode === 'count') wrap.append(el('div', { style: 'display:flex;align-items:center;gap:8px;margin-top:8px' }, el('input', { class: 'input', type: 'number', min: 1, value: e.endCount || 1, style: 'max-width:120px', onchange: (ev) => e.endCount = parseInt(ev.target.value, 10) }), t('endTimes')));
     return wrap;
   }
@@ -543,13 +547,21 @@
       seg(t('setTextSize'), [['Standard', t('tsStandard')], ['Large', t('tsLarge')], ['Extra large', t('tsXL')]], state.textSize, v => { state.textSize = v; localStorage.setItem('med_text', v); render(); }),
       seg(t('setPhotos'), [[true, t('onWord')], [false, t('offWord')]], state.showPhotos, v => { state.showPhotos = v; localStorage.setItem('med_photos', v ? '1' : '0'); render(); }),
     );
-    if (state.sel) c.append(el('div', { class: 'card', style: 'padding:14px' },
-      el('div', { class: 'set-label', html: M.icon('download', 18) + ' ' + esc(t('exportTitle')) }),
-      el('p', { class: 'muted', style: 'font-size:.82em;margin:2px 0 10px' }, fmt('exportNote', { name: personName(cur()) })),
-      el('div', { class: 'segrow' },
-        el('a', { class: 'btn btn-secondary', href: '/api/export.php?profile=' + state.sel + '&days=30' }, t('export30')),
-        el('a', { class: 'btn btn-secondary', href: '/api/export.php?profile=' + state.sel + '&days=90' }, t('export90')),
-        el('a', { class: 'btn btn-secondary', href: '/api/export.php?profile=' + state.sel + '&days=365' }, t('exportAll')))));
+    if (state.sel) {
+      if (!state.exportSel || !state.profiles.some(p => p.id === state.exportSel)) state.exportSel = state.sel;
+      const chips = el('div', { class: 'pswitch' });
+      state.profiles.forEach((p, i) => chips.append(el('button', { class: 'pchip' + (state.exportSel === p.id ? ' on' : ''), onclick: () => { state.exportSel = p.id; render(); } },
+        el('span', { class: 'pchip-av', style: 'background:' + tintFor(p, i) }, (p.name || '?').charAt(0).toUpperCase()), p.name)));
+      const ex = state.exportSel;
+      c.append(el('div', { class: 'card', style: 'padding:14px' },
+        el('div', { class: 'set-label', html: M.icon('download', 18) + ' ' + esc(t('exportTitle')) }),
+        el('p', { class: 'muted', style: 'font-size:.82em;margin:2px 0 8px' }, t('exportForWhom')),
+        chips,
+        el('div', { class: 'segrow', style: 'margin-top:10px' },
+          el('a', { class: 'btn btn-secondary', href: '/api/export.php?profile=' + ex + '&days=30' }, t('export30')),
+          el('a', { class: 'btn btn-secondary', href: '/api/export.php?profile=' + ex + '&days=90' }, t('export90')),
+          el('a', { class: 'btn btn-secondary', href: '/api/export.php?profile=' + ex + '&days=365' }, t('exportAll')))));
+    }
     if (state.user.admin) c.append(el('a', { class: 'btn btn-secondary btn-block', href: '/admin/' }, t('admin')));
     c.append(el('button', { class: 'btn btn-ghost btn-block', onclick: async () => { await api('/auth/logout.php', { method: 'POST' }); location.reload(); } }, t('signOut')));
     c.append(el('p', { class: 'center muted', style: 'font-size:.8em' }, state.user.email));
