@@ -183,7 +183,13 @@ html[lang="ro"] { --font-heading: 'Baloo 2', system-ui, sans-serif; --font-headi
 .noteedit-ta { width: 100%; resize: vertical; min-height: 46px; border-radius: 12px; }
 .card.daynote { display: block; padding: 12px 14px; margin-top: 14px; }
 .dn-label { display: flex; align-items: center; gap: 8px; font-weight: 700; margin-bottom: 8px; }
-textarea.dn-ta { width: 100%; resize: vertical; min-height: 44px; height: 44px; border-radius: 12px; }
+textarea.dn-ta { width: 100%; resize: vertical; min-height: 78px; border-radius: 12px; }
+.timesel { max-width: 150px; }
+.dialog .grid2 .input { height: 52px; box-sizing: border-box; }
+.btn.btn-danger { background: var(--color-accent-700); color: #fff; border: none; }
+.brand-name-row { display: flex; align-items: center; gap: 8px; }
+.info-btn { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; border: none; background: var(--color-surface); color: var(--color-neutral-700); cursor: pointer; flex: 0 0 auto; }
+.login-wrap > *:not(.blob) { position: relative; z-index: 1; }
 
 /* readability: larger + higher-contrast secondary text */
 .muted { color: var(--color-neutral-800); }

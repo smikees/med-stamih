@@ -230,11 +230,10 @@
     return row;
   }
   function toggleTimeEdit(it, ev) {
-    const row = ev.target.closest('.itc-linkrow'); const ex = row.parentElement.querySelector('.timeedit'); if (ex) { ex.remove(); return; }
-    row.parentElement.querySelectorAll('.noteedit').forEach(n => n.remove());
-    const sel = el('select', { class: 'input' }); for (let m = 0; m < 1440; m += 30) sel.append(el('option', { value: m, selected: Math.abs((state.logs[it.id].taken_min ?? it.time) - m) < 15 ? 'selected' : null }, fmtMin(m)));
+    const link = ev.target.closest('.linklike'); if (!link) return;
+    const sel = el('select', { class: 'input timesel' }); for (let m = 0; m < 1440; m += 30) sel.append(el('option', { value: m, selected: Math.abs((state.logs[it.id].taken_min ?? it.time) - m) < 15 ? 'selected' : null }, fmtMin(m)));
     sel.addEventListener('change', () => setLog(it.id, 'taken', parseInt(sel.value, 10)));
-    row.after(el('div', { class: 'timeedit' }, sel));
+    link.replaceWith(sel); sel.focus();
   }
   function toggleNoteEdit(it, l, ev) {
     const row = ev.target.closest('.itc-linkrow'); const ex = row.parentElement.querySelector('.noteedit'); if (ex) { ex.remove(); return; }
@@ -246,7 +245,7 @@
   }
   function dayNoteCard() {
     const wrap = el('div', { class: 'card daynote elev-sm' }, el('div', { class: 'dn-label', html: M.icon('note', 16, 'currentColor', 2.2) + ' ' + esc(t('noteToday')) }));
-    const ta = el('textarea', { class: 'input dn-ta', rows: 1, placeholder: t('noteTodayPh') });
+    const ta = el('textarea', { class: 'input dn-ta', rows: 2, placeholder: t('noteTodayPh') });
     ta.value = state.dayNote || '';
     let saved = state.dayNote || '';
     ta.addEventListener('blur', async () => { const v = ta.value.trim(); if (v === saved) return; saved = v; state.dayNote = v; if (dataCache[state.sel]) dataCache[state.sel].dayNote = v; try { await api('/api/logs.php?action=daynote', { method: 'POST', body: { profile_id: state.sel, date: todayISO(), note: v } }); } catch (e) {} });
@@ -312,7 +311,11 @@
     return wrap;
   }
   async function fetchChannels(pid) { try { const r = await api('/api/channels.php?action=list&profile=' + pid); chanCache[pid] = r.channels || []; if (state.tab === 'manage') render(); } catch (e) { chanCache[pid] = []; } }
-  async function unlinkChan(pid, id) { try { await api('/api/channels.php?action=unlink', { method: 'POST', body: { profile_id: pid, id } }); } catch (e) {} chanCache[pid] = undefined; render(); }
+  function unlinkChan(pid, id) {
+    confirmDialog(t('confirmDelTitle'), t('confirmDelChannel'), t('deleteWord'), async () => {
+      try { await api('/api/channels.php?action=unlink', { method: 'POST', body: { profile_id: pid, id } }); } catch (e) {} chanCache[pid] = undefined; render();
+    });
+  }
   async function linkTelegram(pid) {
     let r; try { r = await api('/api/channels.php?action=link', { method: 'POST', body: { profile_id: pid } }); } catch (e) { window.alert(t('notifMax')); return; }
     chanCache[pid] = undefined;
@@ -407,7 +410,31 @@
     if (it.endMode === 'count' && it.endCount) parts.push(fmt('untilCount', { n: it.endCount }));
     return parts.join(' · ');
   }
-  async function removeItem(it) { await api('/api/items.php?action=delete', { method: 'POST', body: { id: it.id } }); await loadDay(state.manageSel); render(); }
+  function openAbout() {
+    removeDialogs();
+    const bd = el('div', { class: 'dialog-backdrop', onclick: (ev) => { if (ev.target === bd) removeDialogs(); } });
+    const dc = el('div', { class: 'dialog' },
+      el('div', { class: 'dialog-title display' }, t('aboutTitle')),
+      el('div', { class: 'dialog-body' }, el('p', { style: 'line-height:1.55' }, t('aboutBody'))),
+      el('div', { class: 'dialog-actions' }, el('button', { class: 'btn btn-primary', onclick: () => removeDialogs() }, t('close'))));
+    bd.append(dc); document.body.append(bd);
+  }
+  function confirmDialog(title, body, confirmLabel, onConfirm) {
+    removeDialogs();
+    const bd = el('div', { class: 'dialog-backdrop', onclick: (ev) => { if (ev.target === bd) removeDialogs(); } });
+    const dc = el('div', { class: 'dialog' },
+      el('div', { class: 'dialog-title display' }, title),
+      el('div', { class: 'dialog-body' }, el('p', {}, body)),
+      el('div', { class: 'dialog-actions' },
+        el('button', { class: 'btn btn-secondary', onclick: () => removeDialogs() }, t('keepWord')),
+        el('button', { class: 'btn btn-danger', onclick: () => { removeDialogs(); onConfirm(); } }, confirmLabel)));
+    bd.append(dc); document.body.append(bd);
+  }
+  function removeItem(it) {
+    confirmDialog(t('confirmDelTitle'), fmt('confirmDelItem', { name: it.name }), t('deleteWord'), async () => {
+      await api('/api/items.php?action=delete', { method: 'POST', body: { id: it.id } }); await loadDay(state.manageSel); render();
+    });
+  }
   async function notifyNow(it) {
     try {
       const r = await api('/api/notify.php', { method: 'POST', body: { profile_id: state.manageSel, item_id: it.id } });
@@ -531,7 +558,7 @@
     const seg = el('div', { class: 'daytoggles' });
     [['never', 'endNever'], ['date', 'endOnDate'], ['count', 'endAfter']].forEach(([m, k]) => seg.append(el('button', { class: 'btn ' + (e.endMode === m ? 'btn-primary' : 'btn-secondary') + ' small', onclick: () => { e.endMode = m; renderEditor(); } }, t(k))));
     wrap.append(seg);
-    if (e.endMode === 'date') { const di = el('input', { class: 'input', type: 'date', style: 'margin-top:8px', value: e.endDate || '', min: todayISO() }); di.addEventListener('change', () => { e.endDate = di.value || null; }); wrap.append(di); }
+    if (e.endMode === 'date') { const di = el('input', { class: 'input', type: 'date', style: 'margin-top:8px;max-width:200px;text-align:left', value: e.endDate || '', min: todayISO() }); di.addEventListener('change', () => { e.endDate = di.value || null; }); wrap.append(di); }
     if (e.endMode === 'count') wrap.append(el('div', { style: 'display:flex;align-items:center;gap:8px;margin-top:8px' }, el('input', { class: 'input', type: 'number', min: 1, value: e.endCount || 1, style: 'max-width:120px', onchange: (ev) => e.endCount = parseInt(ev.target.value, 10) }), t('endTimes')));
     return wrap;
   }
@@ -730,7 +757,10 @@
     passIn.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
     const gG = '<svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.8-6.8C35.9 2.4 30.4 0 24 0 14.6 0 6.4 5.4 2.5 13.3l7.9 6.2C12.3 13.2 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.5 3-2.2 5.5-4.7 7.2l7.3 5.7C43.6 37.9 46.5 31.8 46.5 24.5z"/><path fill="#FBBC05" d="M10.4 28.5c-.5-1.5-.8-3.1-.8-4.5s.3-3 .8-4.5l-7.9-6.2C.9 16.5 0 20.1 0 24s.9 7.5 2.5 10.7l7.9-6.2z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.3-5.7c-2 1.4-4.7 2.3-8.6 2.3-6.3 0-11.7-3.7-13.6-9l-7.9 6.2C6.4 42.6 14.6 48 24 48z"/></svg>';
     wrap.append(
-      el('div', { class: 'brand-row' }, el('div', { class: 'brand-mark', html: M.icon('pill', 30, '#fff') }), el('div', {}, el('div', { class: 'brand-name display' }, t('brand')), el('div', { class: 'brand-tag' }, t('tagline')))),
+      el('div', { class: 'brand-row' }, el('div', { class: 'brand-mark', html: M.icon('pill', 30, '#fff') }),
+        el('div', {}, el('div', { class: 'brand-name-row' }, el('span', { class: 'brand-name display' }, t('brand')),
+          el('button', { class: 'info-btn', 'aria-label': t('aboutAria'), title: t('aboutAria'), onclick: openAbout, html: M.icon('info', 20, 'currentColor', 2.2) })),
+          el('div', { class: 'brand-tag' }, t('tagline')))),
       el('h1', { class: 'login-h display' }, t('welcome')), el('p', { class: 'login-sub' }, t('signInSub')), errBox,
       el('div', { class: 'field' }, el('label', {}, t('email')), emailIn),
       el('div', { class: 'field' }, el('label', {}, t('password')), passIn),

@@ -1,7 +1,7 @@
 /* i18n.js — full bilingual copy, ported verbatim from the handoff source (RO default). */
 window.STR = {
     en: {
-      tagline:'Daily medicines, together', welcome:'Welcome back', signInSub:"Sign in to your family's daily list.", familyName:'The Bennett family', email:'Email', password:'Password', signIn:'Sign in', help:'Trouble signing in? Call Sarah on (555) 010-2929',
+      tagline:'Daily medicines, together', welcome:'Welcome back', signInSub:"Sign in to your family's daily list.", familyName:'The Bennett family', email:'Email', password:'Password', signIn:'Sign in', help:'Trouble signing in? Drop a line to mihai.stanculescu@gmail.com',
       navToday:'Today', navHistory:'History', navManage:'Manage', navSettings:'Settings',
       greetMorning:'Good morning', greetAfternoon:'Good afternoon', greetEvening:'Good evening',
       daysTitle:"{name}'s day", weekTitle:"{name}'s week",
@@ -19,12 +19,12 @@ window.STR = {
       groupMorning:'Morning', groupNoon:'Midday', groupEvening:'Evening', groupBedtime:'Bedtime',
     },
     ro: {
-      tagline:'Medicamente zilnice, împreună', welcome:'Bine ai revenit', signInSub:'Conectează-te la lista zilnică a familiei.', familyName:'Familia Bennett', email:'E-mail', password:'Parolă', signIn:'Conectează-te', help:'Probleme la conectare? Sun-o pe Sarah la (555) 010-2929',
+      tagline:'Medicamente zilnice, împreună', welcome:'Bine ai revenit', signInSub:'Conectează-te la lista zilnică a familiei.', familyName:'Familia Bennett', email:'E-mail', password:'Parolă', signIn:'Conectează-te', help:'Probleme la conectare? Scrie-i lui mihai.stanculescu@gmail.com',
       navToday:'Azi', navHistory:'Istoric', navManage:'Gestionare', navSettings:'Setări',
       greetMorning:'Bună dimineața', greetAfternoon:'Bună ziua', greetEvening:'Bună seara',
       daysTitle:'Ziua lui {name}', weekTitle:'Săptămâna lui {name}',
       sumAllDone:'Gata pe azi', sumNothing:'Nimic programat', sumPillLeft:'Mai ai {n} pastilă de luat', sumPillsLeft:'Mai ai {n} pastile de luat', sumTaken:'{done} din {total} luate', sumNotTaken:'{n} neluate', sumAddManage:'Adaugă din Gestionare',
-      remOverdue:'Medicamentele de {group} sunt întârziate', remDue:'Medicamentele de {group} trebuie luate acum', remNext:'Următoarea amintire · {group} la {time}', remAllDone:'Gata pe azi — bravo!', remAllDonePlain:'Gata pe azi!',
+      remOverdue:'Medicamentele de {group} sunt întârziate', remDue:'Medicamentele de {group} trebuie luate acum', remNext:'Următoarea notificare · {group} la {time}', remAllDone:'Gata pe azi — bravo!', remAllDonePlain:'Gata pe azi!',
       badgeAllDone:'Gata', badgeDue:'Acum', badgeOverdue:'Întârziat', badgeSoon:'Urmează',
       reminderWord:'Reamintire la {time}', secActivities:'Activități',
       take:'ia {n}', forPurpose:'pentru {purpose}', takenAt:'Luat la {time}', takenWord:'Luat', markedNot:'Marcat ca neluat', doneAt:'Făcut la {time}', doneWord:'Făcut', markedNotAct:'Nu am făcut',
@@ -38,5 +38,9 @@ window.STR = {
     },
 };
 // app-only extras not in the handoff STR:
+window.STR.en.aboutAria='About the app'; window.STR.en.aboutTitle='About Alongside'; window.STR.en.aboutBody='Alongside helps families keep track of an older relative’s daily medicines and activities. Add each pill or task with its time, and everyone you share the profile with sees the same list, ticks things off, and can get gentle Telegram reminders. Notes, photos and a shareable history make it easy to stay on top of things together.';
+window.STR.en.confirmDelTitle='Remove this item?'; window.STR.en.confirmDelItem='Remove “{name}” from the list? Today and future days stop showing it — past history is kept.'; window.STR.en.confirmDelChannel='Disconnect this Telegram account? It will stop receiving reminders.'; window.STR.en.deleteWord='Remove'; window.STR.en.keepWord='Cancel';
+window.STR.ro.aboutAria='Despre aplicație'; window.STR.ro.aboutTitle='Despre Alongside'; window.STR.ro.aboutBody='Alongside ajută familiile să urmărească medicamentele și activitățile zilnice ale unei persoane dragi. Adaugi fiecare pastilă sau activitate cu ora ei, iar toți cei cu care împarți profilul văd aceeași listă, bifează ce s-a făcut și pot primi memento-uri blânde pe Telegram. Notițele, pozele și un istoric ce poate fi partajat fac totul mai ușor, împreună.';
+window.STR.ro.confirmDelTitle='Ștergi acest element?'; window.STR.ro.confirmDelItem='Scoți „{name}” din listă? Nu va mai apărea azi și în zilele următoare — istoricul rămâne.'; window.STR.ro.confirmDelChannel='Deconectezi acest cont de Telegram? Nu va mai primi memento-uri.'; window.STR.ro.deleteWord='Șterge'; window.STR.ro.keepWord='Anulează';
 window.STR.en.brand='Alongside'; window.STR.en.orDivider='or'; window.STR.en.googleBtn='Continue with Google'; window.STR.en.people='People'; window.STR.en.noPeople='No people yet. Add them from the admin page.'; window.STR.en.comingSoon='Coming soon — building this section.'; window.STR.en.admin='Admin';
 window.STR.ro.brand='Alongside'; window.STR.ro.orDivider='sau'; window.STR.ro.googleBtn='Continuă cu Google'; window.STR.ro.people='Persoane'; window.STR.ro.noPeople='Nicio persoană încă. Adaug-o din pagina de administrare.'; window.STR.ro.comingSoon='În curând — construim această secțiune.'; window.STR.ro.admin='Administrare';
