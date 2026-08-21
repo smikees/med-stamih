@@ -171,3 +171,34 @@ html[lang="ro"] { --font-heading: 'Baloo 2', system-ui, sans-serif; --font-headi
 
 /* inputs at 16px stop mobile browsers from auto-zooming on focus (and read better) */
 .input, select.input, textarea.input, input, select, textarea { font-size: 16px; }
+
+/* ---- History ---- */
+.hist-stats { display: flex; gap: 10px; margin-bottom: 12px; }
+.card.stat { flex: 1; flex-direction: column; align-items: flex-start; padding: 12px 14px; border-radius: 12px; gap: 0; }
+.stat-n { font-size: 1.9em; font-weight: 800; line-height: 1.05; }
+.stat-n.sage { color: var(--color-accent-2-700); }
+.stat-l { font-size: .82em; margin-top: 4px; }
+.weeknav { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.weekcap { font-weight: 700; }
+.histgrid-wrap { padding: 10px; overflow-x: auto; border-radius: 12px; }
+.histgrid { display: grid; gap: 4px; min-width: 340px; }
+.hg-dh { text-align: center; font-size: .74em; color: var(--color-neutral-800); }
+.hg-dh.today .hg-dn { color: var(--color-accent); font-weight: 800; }
+.hg-wd { font-weight: 600; }
+.hg-dn { font-weight: 700; }
+.hg-name { font-size: .84em; font-weight: 600; display: flex; align-items: center; min-height: 42px; padding-right: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hg-cell { min-height: 42px; border-radius: 8px; border: 0; font: inherit; font-size: 1rem; font-weight: 800; cursor: pointer; display: grid; place-items: center; }
+.hg-cell.blank { background: transparent; cursor: default; }
+.hg-empty { text-align: center; color: var(--color-neutral-800); padding: 16px; }
+.c-taken { background: var(--color-accent-2-100); color: var(--color-accent-2-700); }
+.c-skip { background: var(--color-accent-100); color: var(--color-accent-700); }
+.c-none { background: var(--color-neutral-200); color: var(--color-neutral-500); }
+.na { background: var(--color-neutral-100); color: var(--color-neutral-400); font-size: .62em; cursor: default; }
+.legend { display: flex; gap: 12px; flex-wrap: wrap; margin: 10px 2px; }
+.leg { display: inline-flex; align-items: center; gap: 5px; font-size: .82em; color: var(--color-neutral-800); }
+.leg-c { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; font-weight: 800; font-size: .78em; }
+.dirtybar { display: flex; gap: 10px; margin: 10px 0; }
+.dirtybar .btn { flex: 1; }
+.wl-c { width: 34px; height: 34px; border-radius: 999px; display: grid; place-items: center; font-weight: 800; flex: 0 0 auto; }
+.fh-day { font-weight: 700; margin: 12px 0 4px; font-size: .92em; }
+.fh-row { display: flex; align-items: center; gap: 10px; padding: 5px 0; }

@@ -20,6 +20,8 @@
     editItem: null,                // item-editor dialog state
     personDlg: null,               // family-member (profile) editor dialog state
     manageTab: 'lists',            // Manage sub-tab: 'lists' | 'members'
+    weekOffset: 0,                 // History: 0 = this week, negative = past
+    histDirty: false, histSnap: null,
   };
   const SIZES = { Standard: 17, Large: 19, 'Extra large': 22 };
   const t = (k) => (window.STR[state.lang] && window.STR[state.lang][k]) ?? (window.STR.en[k] ?? k);
@@ -71,6 +73,7 @@
     const body = { profile_id: state.sel, item_id: itemId, date: todayISO(), status, taken_min: takenMin ?? null, note: note ?? null };
     if (status == null) delete state.logs[itemId]; else state.logs[itemId] = { status, taken_min: takenMin ?? null, note: note ?? null };
     if (dataCache[state.sel]) dataCache[state.sel].logs = state.logs;
+    if (histCache[state.sel]) { const k = todayISO() + '|' + itemId; if (status == null) delete histCache[state.sel].logs[k]; else histCache[state.sel].logs[k] = state.logs[itemId]; }
     render();
     try { await api('/api/logs.php?action=set', { method: 'POST', body }); } catch (e) { await loadDay(state.sel); render(); }
   }
@@ -99,7 +102,7 @@
 
   function routeTab(screen) {
     if (state.tab === 'settings') return renderSettings(screen);
-    if (state.tab === 'history') { head(screen, t('histKicker'), fmt('weekTitle', { name: personName(cur()) })); screen.append(switcher('sel'), el('div', { class: 'content' }, el('p', { class: 'soon' }, t('comingSoon')))); return; }
+    if (state.tab === 'history') { histRoute(screen); return; }
     if (state.tab === 'manage' && state.manageTab === 'members') { renderManageMembers(screen); return; }
     const pid = state.tab === 'manage' ? state.manageSel : state.sel;
     ensureLoaded(pid, screen);
@@ -386,6 +389,156 @@
     c.append(el('button', { class: 'btn btn-ghost btn-block', onclick: async () => { await api('/auth/logout.php', { method: 'POST' }); location.reload(); } }, t('signOut')));
     c.append(el('p', { class: 'center muted', style: 'font-size:.8em' }, state.user.email));
     screen.append(c);
+  }
+
+  /* ---------------- History ---------------- */
+  const histCache = {};   // pid -> { items, logs:{"iso|itemId":{status,taken_min,note}}, from }
+  let histLoadedKey = null;
+  function addDaysISO(iso, n) { const d = new Date(iso + 'T00:00:00'); d.setDate(d.getDate() + n); return M.isoOf(d); }
+  function weekStartISO(offset) { const d = new Date(); d.setDate(d.getDate() + offset * 7); const dow = (d.getDay() + 6) % 7; d.setDate(d.getDate() - dow); return M.isoOf(d); } // Monday
+  function weekDatesISO(offset) { const s = weekStartISO(offset); return Array.from({ length: 7 }, (_, i) => addDaysISO(s, i)); }
+  const minISO = (a, b) => (a < b ? a : b);
+  const hlog = (pid, iso, id) => (histCache[pid] && histCache[pid].logs[iso + '|' + id]) || null;
+
+  async function ensureItems(pid) {
+    if (dataCache[pid]) return dataCache[pid].items;
+    const it = await api('/api/items.php?action=list&profile=' + pid);
+    return (it.items || []).map(normItem);
+  }
+  async function loadHist(pid, from) {
+    const items = await ensureItems(pid);
+    const to = todayISO();
+    const r = await api('/api/logs.php?action=range&profile=' + pid + '&from=' + from + '&to=' + to);
+    histCache[pid] = { items, logs: r.logs || {}, from };
+  }
+  function histRoute(screen) {
+    const pid = state.sel; const key = pid + '|' + state.weekOffset;
+    const neededFrom = minISO(weekStartISO(state.weekOffset), addDaysISO(todayISO(), -29));
+    const c = histCache[pid];
+    if (c && c.from <= neededFrom && histLoadedKey === key) { renderHistory(screen); return; }
+    if (c && c.from <= neededFrom) { histLoadedKey = key; renderHistory(screen); return; }
+    histLoadedKey = key;
+    head(screen, t('histKicker'), fmt('weekTitle', { name: personName(cur()) }));
+    screen.append(switcher('sel'));
+    const sk = el('div', { class: 'content' }); sk.append(el('div', { class: 'sk', style: 'height:70px' }), el('div', { class: 'sk', style: 'height:230px' })); screen.append(sk);
+    loadHist(pid, neededFrom).then(() => { if (histLoadedKey === key) render(); });
+  }
+  function scheduledInWeek(items, dates) { return items.filter(it => dates.some(iso => M.isScheduledOn(it, new Date(iso + 'T00:00:00')))); }
+  function renderHistory(screen) {
+    const pid = state.sel; const items = (histCache[pid] && histCache[pid].items) || [];
+    const dates = weekDatesISO(state.weekOffset); const today = todayISO();
+    head(screen, t('histKicker'), fmt('weekTitle', { name: personName(cur()) }));
+    screen.append(switcher('sel'));
+    const c = el('div', { class: 'content' });
+    // stats over the week (days up to today)
+    let sched = 0, taken = 0;
+    scheduledInWeek(items, dates).forEach(it => dates.forEach(iso => {
+      if (iso > today) return; if (!M.isScheduledOn(it, new Date(iso + 'T00:00:00'))) return;
+      sched++; const l = hlog(pid, iso, it.id); if (l && l.status === 'taken') taken++;
+    }));
+    const pct = sched ? Math.round(taken / sched * 100) : 0;
+    c.append(el('div', { class: 'hist-stats' },
+      el('div', { class: 'card stat' }, el('div', { class: 'stat-n sage' }, pct + '%'), el('div', { class: 'stat-l muted' }, t('takenThisWeek'))),
+      el('div', { class: 'card stat' }, el('div', { class: 'stat-n' }, String(taken)), el('div', { class: 'stat-l muted' }, fmt('weekTaken', { n: sched })))));
+    // week nav
+    const capTxt = state.weekOffset === 0 ? t('weekThis') : state.weekOffset === -1 ? t('weekLast') : (M.shortDate(dates[0], state.lang) + ' – ' + M.shortDate(dates[6], state.lang));
+    c.append(el('div', { class: 'weeknav' },
+      el('button', { class: 'btn btn-secondary btn-icon', 'aria-label': t('prevWeek'), onclick: () => { state.weekOffset--; render(); }, html: M.icon('chevronLeft', 18) }),
+      el('div', { class: 'weekcap' }, capTxt),
+      el('button', { class: 'btn btn-secondary btn-icon', 'aria-label': t('nextWeek'), disabled: state.weekOffset >= 0 ? 'disabled' : null, onclick: () => { if (state.weekOffset < 0) { state.weekOffset++; render(); } }, html: M.icon('chevronRight', 18) })));
+    // grid
+    const rows = scheduledInWeek(items, dates);
+    const grid = el('div', { class: 'histgrid-wrap card' });
+    const g = el('div', { class: 'histgrid', style: 'grid-template-columns:116px repeat(7,minmax(42px,1fr))' });
+    g.append(el('div', { class: 'hg-corner' }, ''));
+    dates.forEach(iso => { const d = new Date(iso + 'T00:00:00'); g.append(el('div', { class: 'hg-dh' + (iso === today ? ' today' : '') }, el('div', { class: 'hg-wd' }, M.wdChip(d.getDay(), state.lang)), el('div', { class: 'hg-dn' }, String(d.getDate())))); });
+    if (!rows.length) g.append(el('div', { class: 'hg-empty', style: 'grid-column:1/-1' }, t('noRecordsWeek')));
+    rows.forEach(it => {
+      g.append(el('div', { class: 'hg-name' }, it.name));
+      dates.forEach(iso => {
+        const future = iso > today; const sch = M.isScheduledOn(it, new Date(iso + 'T00:00:00'));
+        if (future) { g.append(el('div', { class: 'hg-cell blank' }, '')); return; }
+        if (!sch) { g.append(el('div', { class: 'hg-cell na' }, 'N/A')); return; }
+        const l = hlog(pid, iso, it.id); const st = l ? l.status : null;
+        const sym = st === 'taken' ? '✓' : st === 'skipped' ? '✕' : '–';
+        const cls = st === 'taken' ? 'c-taken' : st === 'skipped' ? 'c-skip' : 'c-none';
+        g.append(el('button', { class: 'hg-cell ' + cls, onclick: () => setHistCell(pid, iso, it.id) }, sym));
+      });
+    });
+    grid.append(g); c.append(grid);
+    // legend
+    c.append(el('div', { class: 'legend' },
+      ['legendTaken c-taken ✓', 'legendNot c-skip ✕', 'legendNo c-none –', 'legendNA na N/A'].map(s => { const [k, cl, sym] = s.split(' '); return el('span', { class: 'leg' }, el('span', { class: 'leg-c ' + cl }, sym), t(k)); })));
+    // dirty bar / hint
+    if (state.histDirty) c.append(el('div', { class: 'dirtybar' },
+      el('button', { class: 'btn btn-secondary', onclick: histCancel, html: M.icon('rotate', 16) + ' ' + esc(t('cancelChanges')) }),
+      el('button', { class: 'btn btn-primary', onclick: histSave, html: M.icon('check', 16) + ' ' + esc(t('saveChanges')) })));
+    else c.append(el('p', { class: 'muted', style: 'font-size:.82em;margin:8px 2px' }, t('tapCorrect')));
+    // view all
+    c.append(el('button', { class: 'btn btn-ghost btn-block', onclick: () => fullHistoryDialog(pid) }, t('viewAll')));
+    // worth a look
+    const wl = worthList(pid, items);
+    if (wl.length) {
+      c.append(el('h2', { class: 'display', style: 'font-size:1.1em;margin:18px 0 6px' }, t('worthLook')));
+      wl.forEach(w => c.append(el('div', { class: 'mrow' },
+        el('span', { class: 'wl-c ' + (w.kind === 'skip' ? 'c-skip' : 'c-none') }, w.kind === 'skip' ? '✕' : '–'),
+        el('div', { style: 'flex:1;min-width:0' }, el('div', { style: 'font-weight:700' }, w.name), el('div', { class: 'meta' }, M.wdShort(new Date(w.iso + 'T00:00:00').getDay(), state.lang) + ' ' + t('group' + cap(w.group)).toLowerCase() + ' · ' + t(w.kind === 'skip' ? 'missNot' : 'missNo'))))));
+    }
+    screen.append(c);
+  }
+  function setHistCell(pid, iso, id) {
+    const key = iso + '|' + id; const cur = hlog(pid, iso, id); const curSt = cur ? cur.status : null;
+    const next = curSt === null ? 'taken' : curSt === 'taken' ? 'skipped' : null;
+    if (!state.histSnap) state.histSnap = {};
+    if (!(key in state.histSnap)) state.histSnap[key] = cur ? Object.assign({}, cur) : null;
+    applyHist(pid, iso, id, next);
+    state.histDirty = true; render();
+    api('/api/logs.php?action=set', { method: 'POST', body: { profile_id: pid, item_id: id, date: iso, status: next, taken_min: null } }).catch(() => {});
+  }
+  function applyHist(pid, iso, id, status) {
+    const key = iso + '|' + id; const logs = histCache[pid].logs;
+    if (status == null) delete logs[key]; else logs[key] = { status, taken_min: (logs[key] && logs[key].taken_min) ?? null, note: (logs[key] && logs[key].note) || null };
+    if (iso === todayISO() && dataCache[pid]) { if (status == null) delete dataCache[pid].logs[id]; else dataCache[pid].logs[id] = logs[key]; }
+  }
+  function histSave() { state.histSnap = null; state.histDirty = false; render(); }
+  function histCancel() {
+    const pid = state.sel; const snap = state.histSnap || {};
+    Object.keys(snap).forEach(key => { const [iso, id] = key.split('|'); const orig = snap[key]; applyHist(pid, iso, +id, orig ? orig.status : null); api('/api/logs.php?action=set', { method: 'POST', body: { profile_id: pid, item_id: +id, date: iso, status: orig ? orig.status : null, taken_min: orig ? orig.taken_min : null } }).catch(() => {}); });
+    state.histSnap = null; state.histDirty = false; render();
+  }
+  function worthList(pid, items) {
+    const out = []; const today = todayISO();
+    for (let i = 1; i <= 6 && out.length < 5; i++) {
+      const iso = addDaysISO(today, -i); const d = new Date(iso + 'T00:00:00');
+      items.forEach(it => { if (out.length >= 5) return; if (!M.isScheduledOn(it, d)) return; const l = hlog(pid, iso, it.id); if (l && l.status === 'taken') return; out.push({ name: it.name, iso, group: it.group, kind: l && l.status === 'skipped' ? 'skip' : 'none' }); });
+    }
+    return out.slice(0, 5);
+  }
+  function fullHistoryDialog(pid) {
+    removeDialogs();
+    const items = (histCache[pid] && histCache[pid].items) || []; const today = todayISO();
+    const bd = el('div', { class: 'dialog-backdrop', onclick: (ev) => { if (ev.target === bd) removeDialogs(); } });
+    const body = el('div', { class: 'dialog-body', style: 'max-height:64vh;overflow-y:auto' });
+    let any = false;
+    for (let i = 0; i < 30; i++) {
+      const iso = addDaysISO(today, -i); const d = new Date(iso + 'T00:00:00');
+      const dayItems = items.filter(it => M.isScheduledOn(it, d)).sort((a, b) => a.time - b.time);
+      if (!dayItems.length) continue; any = true;
+      body.append(el('div', { class: 'fh-day' }, M.wdShort(d.getDay(), state.lang) + ' ' + M.shortDate(iso, state.lang) + (iso === today ? ' · ' + t('weekThis') : '')));
+      dayItems.forEach(it => {
+        const l = hlog(pid, iso, it.id); const st = l ? l.status : null;
+        const sym = st === 'taken' ? '✓' : st === 'skipped' ? '✕' : '–'; const cl = st === 'taken' ? 'c-taken' : st === 'skipped' ? 'c-skip' : 'c-none';
+        const lab = st === 'taken' ? (l.taken_min != null ? fmt(it.type === 'activity' ? 'doneAt' : 'takenAt', { time: fmtMin(l.taken_min) }) : t(it.type === 'activity' ? 'doneWord' : 'takenWord')) : st === 'skipped' ? t(it.type === 'activity' ? 'markedNotAct' : 'markedNot') : t('legendNo');
+        body.append(el('div', { class: 'fh-row' }, el('span', { class: 'wl-c ' + cl }, sym), el('span', { style: 'flex:1;min-width:0' }, it.name), el('span', { class: 'meta' }, lab)));
+      });
+    }
+    if (!any) body.append(el('p', { class: 'muted' }, t('noRecordsWeek')));
+    const dc = el('div', { class: 'dialog' },
+      el('div', { class: 'dialog-title display' }, t('allHistTitle')),
+      el('p', { class: 'muted', style: 'margin:-2px 0 8px' }, personName(cur()) + ' · ' + t('last30')),
+      body,
+      el('div', { class: 'dialog-actions' }, el('button', { class: 'btn btn-secondary', onclick: removeDialogs }, t('close'))));
+    bd.append(dc); document.body.append(bd);
   }
 
   /* ---------------- Login ---------------- */
