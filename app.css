@@ -202,3 +202,10 @@ html[lang="ro"] { --font-heading: 'Baloo 2', system-ui, sans-serif; --font-headi
 .wl-c { width: 34px; height: 34px; border-radius: 999px; display: grid; place-items: center; font-weight: 800; flex: 0 0 auto; }
 .fh-day { font-weight: 700; margin: 12px 0 4px; font-size: .92em; }
 .fh-row { display: flex; align-items: center; gap: 10px; padding: 5px 0; }
+
+/* scrollable dialog bodies: keep content off the scrollbar + theme it warmly */
+.dialog-body { padding-right: 12px; scrollbar-width: thin; scrollbar-color: var(--color-neutral-400) transparent; }
+.dialog-body::-webkit-scrollbar { width: 10px; }
+.dialog-body::-webkit-scrollbar-track { background: transparent; }
+.dialog-body::-webkit-scrollbar-thumb { background: var(--color-neutral-400); border-radius: 999px; border: 3px solid transparent; background-clip: padding-box; }
+.dialog-body::-webkit-scrollbar-thumb:hover { background: var(--color-neutral-500); background-clip: padding-box; }

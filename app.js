@@ -31,7 +31,12 @@
   const fmtMin = (m) => M.fmtMin(m, state.lang);
   const isoToDMY = (iso) => (iso && /^\d{4}-\d{2}-\d{2}$/.test(iso)) ? iso.split('-').reverse().join('/') : '';
   function dmyToIso(s) { const m = String(s).trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); if (!m) return null; const d = +m[1], mo = +m[2], y = +m[3]; if (mo < 1 || mo > 12 || d < 1 || d > 31) return null; return y + '-' + String(mo).padStart(2, '0') + '-' + String(d).padStart(2, '0'); }
-  function applyPrefs() { document.documentElement.style.fontSize = (SIZES[state.textSize] || 19) + 'px'; document.documentElement.lang = state.lang; }
+  function applyPrefs() {
+    const root = SIZES[state.textSize] || 19;
+    document.documentElement.style.fontSize = root + 'px';                 // scales rem
+    document.body.style.fontSize = (root * 15 / 19).toFixed(1) + 'px';     // body drives em/inherited text (Large=15px)
+    document.documentElement.lang = state.lang;
+  }
   function personName(p) { return p ? p.name : ''; }
   function tintFor(p, i) { return (p && p.tint) || TINTS[i % TINTS.length]; }
 
