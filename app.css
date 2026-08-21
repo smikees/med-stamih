@@ -142,3 +142,25 @@ html[lang="ro"] { --font-heading: 'Baloo 2', system-ui, sans-serif; --font-headi
 .card, .dialog { border-radius: 12px; }
 .card.itemcard, .card.summary { border-radius: 12px; }
 .mrow, .rbanner, .statebar { border-radius: 10px; }
+
+/* Manage sub-tabs */
+.subtabs { display: flex; gap: 8px; margin-bottom: 12px; }
+.subtab { flex: 1; padding: 9px 12px; border-radius: 999px; border: 1.5px solid var(--color-divider); background: transparent; cursor: pointer; font: inherit; font-weight: 700; font-size: .92em; color: var(--color-neutral-700); }
+.subtab.on { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-bg); }
+
+/* skeleton loaders (shown while a profile's data loads) */
+.sk { position: relative; overflow: hidden; background: var(--color-surface); border-radius: 12px; margin-bottom: 10px; }
+.sk::after { content: ""; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent); animation: sk 1.15s infinite; }
+@keyframes sk { 100% { transform: translateX(100%); } }
+@media (prefers-reduced-motion: reduce) { .sk::after { animation: none; } }
+
+/* readability: larger + higher-contrast secondary text */
+.muted { color: var(--color-neutral-800); }
+.field > label { font-size: .92em; font-weight: 600; color: var(--color-neutral-800); }
+.appbar-kicker { color: var(--color-neutral-800); font-size: .86em; }
+.itc-detail, .sec-rem { font-size: .9em; }
+.meta { font-size: .9em; color: var(--color-neutral-800); }
+.rec { font-size: .88em; color: var(--color-accent-2-700); }
+
+/* belt-and-suspenders: no stray horizontal scroll on desktop */
+.screen { overflow-x: hidden; }

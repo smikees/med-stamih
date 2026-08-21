@@ -19,6 +19,7 @@
     items: [], logs: {},           // for the currently-loaded profile+today
     editItem: null,                // item-editor dialog state
     personDlg: null,               // family-member (profile) editor dialog state
+    manageTab: 'lists',            // Manage sub-tab: 'lists' | 'members'
   };
   const SIZES = { Standard: 17, Large: 19, 'Extra large': 22 };
   const t = (k) => (window.STR[state.lang] && window.STR[state.lang][k]) ?? (window.STR.en[k] ?? k);
@@ -26,6 +27,8 @@
   const todayISO = () => M.isoOf(new Date());
   const nowMin = () => { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); };
   const fmtMin = (m) => M.fmtMin(m, state.lang);
+  const isoToDMY = (iso) => (iso && /^\d{4}-\d{2}-\d{2}$/.test(iso)) ? iso.split('-').reverse().join('/') : '';
+  function dmyToIso(s) { const m = String(s).trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); if (!m) return null; const d = +m[1], mo = +m[2], y = +m[3]; if (mo < 1 || mo > 12 || d < 1 || d > 31) return null; return y + '-' + String(mo).padStart(2, '0') + '-' + String(d).padStart(2, '0'); }
   function applyPrefs() { document.documentElement.style.fontSize = (SIZES[state.textSize] || 19) + 'px'; document.documentElement.lang = state.lang; }
   function personName(p) { return p ? p.name : ''; }
   function tintFor(p, i) { return (p && p.tint) || TINTS[i % TINTS.length]; }
@@ -48,15 +51,26 @@
 
   /* ---------------- data ---------------- */
   async function loadProfiles() { state.profiles = (await api('/api/profiles.php?action=list')).profiles || []; if (!state.sel && state.profiles[0]) state.sel = state.profiles[0].id; if (!state.manageSel && state.profiles[0]) state.manageSel = state.profiles[0].id; }
+  const dataCache = {};   // pid -> { items, logs } for today; makes profile-switching instant
   async function loadDay(pid) {
     if (!pid) { state.items = []; state.logs = {}; return; }
     const [it, dy] = await Promise.all([api('/api/items.php?action=list&profile=' + pid), api('/api/logs.php?action=day&profile=' + pid + '&date=' + todayISO())]);
     state.items = (it.items || []).map(normItem);
     state.logs = dy.logs || {};
+    dataCache[pid] = { items: state.items, logs: state.logs };
+  }
+  async function refreshDay(pid, key) {   // background revalidate after showing cached data
+    try {
+      const [it, dy] = await Promise.all([api('/api/items.php?action=list&profile=' + pid), api('/api/logs.php?action=day&profile=' + pid + '&date=' + todayISO())]);
+      const items = (it.items || []).map(normItem), logs = dy.logs || {};
+      dataCache[pid] = { items, logs };
+      if (loadedFor === key) { state.items = items; state.logs = logs; render(); }
+    } catch (e) {}
   }
   async function setLog(itemId, status, takenMin, note) {
     const body = { profile_id: state.sel, item_id: itemId, date: todayISO(), status, taken_min: takenMin ?? null, note: note ?? null };
     if (status == null) delete state.logs[itemId]; else state.logs[itemId] = { status, taken_min: takenMin ?? null, note: note ?? null };
+    if (dataCache[state.sel]) dataCache[state.sel].logs = state.logs;
     render();
     try { await api('/api/logs.php?action=set', { method: 'POST', body }); } catch (e) { await loadDay(state.sel); render(); }
   }
@@ -86,24 +100,36 @@
   function routeTab(screen) {
     if (state.tab === 'settings') return renderSettings(screen);
     if (state.tab === 'history') { head(screen, t('histKicker'), fmt('weekTitle', { name: personName(cur()) })); screen.append(switcher('sel'), el('div', { class: 'content' }, el('p', { class: 'soon' }, t('comingSoon')))); return; }
+    if (state.tab === 'manage' && state.manageTab === 'members') { renderManageMembers(screen); return; }
     const pid = state.tab === 'manage' ? state.manageSel : state.sel;
     ensureLoaded(pid, screen);
   }
   function cur() { return state.profiles.find(p => p.id === state.sel); }
   function curManage() { return state.profiles.find(p => p.id === state.manageSel); }
 
-  let loadedFor = null, loadedTab = null;
+  let loadedFor = null;
   async function ensureLoaded(pid, screen) {
     const key = state.tab + ':' + pid;
-    if (loadedFor !== key) {
-      screen.append(el('div', { class: 'content muted', style: 'padding-top:30vh;text-align:center' }, '…'));
-      loadedFor = key; await loadDay(pid); render(); return;
+    if (loadedFor === key) { state.tab === 'today' ? renderToday(screen) : renderManage(screen); return; }
+    loadedFor = key;
+    if (dataCache[pid]) {                       // instant from cache, revalidate in background
+      state.items = dataCache[pid].items; state.logs = dataCache[pid].logs;
+      render(); refreshDay(pid, key); return;
     }
-    if (state.tab === 'today') renderToday(screen); else renderManage(screen);
+    renderSkeleton(screen);                      // first time: shimmer, then load
+    await loadDay(pid);
+    if (loadedFor === key) render();
   }
-  // when switching profile/tab, invalidate
-  function invalidate() { loadedFor = null; }
-  ['sel', 'manageSel'].forEach(() => {});
+  function renderSkeleton(screen) {
+    const isManage = state.tab === 'manage';
+    const p = state.profiles.find(x => x.id === (isManage ? state.manageSel : state.sel));
+    head(screen, isManage ? t('mngKicker') : greeting(), isManage ? t('mngTitle') : fmt('daysTitle', { name: personName(p) }));
+    screen.append(switcher(isManage ? 'manageSel' : 'sel'));
+    const c = el('div', { class: 'content' });
+    c.append(el('div', { class: 'sk sk-card', style: 'height:92px' }));
+    for (let i = 0; i < 3; i++) c.append(el('div', { class: 'sk sk-card', style: 'height:' + (i === 0 ? 132 : 96) + 'px' }));
+    screen.append(c);
+  }
 
   /* ---------------- Today ---------------- */
   function scheduledToday(items) { const d = new Date(); return items.filter(it => M.isScheduledOn(it, d)); }
@@ -153,7 +179,7 @@
     if (over) { cls = 'rb-alert'; txt = fmt('remOverdue', { group: t('group' + cap(over.g.key)) }); }
     else if (due) { cls = 'rb-alert'; txt = fmt('remDue', { group: t('group' + cap(due.g.key)) }); }
     else if (next) { cls = 'rb-soon'; txt = fmt('remNext', { group: t('group' + cap(next.g.key)), time: fmtMin(next.firstTime) }); }
-    else { cls = 'rb-done'; txt = t('remAllDone'); }
+    else { cls = 'rb-done'; const anySkip = pills.some(x => state.logs[x.id] && state.logs[x.id].status === 'skipped'); txt = t(anySkip ? 'remAllDonePlain' : 'remAllDone'); }
     return el('div', { class: 'rbanner ' + cls }, el('span', { class: 'rb-ico', html: M.icon('bell', 18, 'currentColor', 2.4) }), txt);
   }
   const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
@@ -200,11 +226,17 @@
     e.target.after(el('div', { class: 'timeedit' }, sel));
   }
 
-  /* ---------------- Manage ---------------- */
-  function renderManage(screen) {
+  /* ---------------- Manage (sub-tabs: Lists / Family members) ---------------- */
+  function manageSubtabs() {
+    const bar = el('div', { class: 'subtabs' });
+    [['lists', 'tabLists'], ['members', 'familyMembers']].forEach(([k, lab]) =>
+      bar.append(el('button', { class: 'subtab' + (state.manageTab === k ? ' on' : ''), onclick: () => { state.manageTab = k; render(); } }, t(lab))));
+    return bar;
+  }
+  function renderManage(screen) {   // Lists sub-tab
     const p = curManage();
     head(screen, t('mngKicker'), t('mngTitle'));
-    screen.append(switcher('manageSel'));
+    screen.append(manageSubtabs(), switcher('manageSel'));
     const c = el('div', { class: 'content' });
     c.append(el('div', { class: 'mng-listhead' }, el('h2', { class: 'display', style: 'font-size:1.25em' }, fmt('listOf', { name: personName(p) })),
       el('button', { class: 'btn btn-primary', onclick: () => openEditor(null), html: M.icon('plus', 18, 'currentColor', 2.6) + ' ' + esc(t('addBtn')) })));
@@ -215,20 +247,25 @@
       const rec = recurText(it);
       c.append(el('div', { class: 'mrow card' },
         state.showPhotos ? el('span', { class: 'mrow-av ' + (it.type === 'activity' ? 'act' : 'pill'), html: it.photo ? '' : M.icon(it.type === 'activity' ? 'activity' : 'pill', 22, it.type === 'activity' ? 'var(--color-accent-2-700)' : 'var(--color-accent-700)') }) : null,
-        el('div', { style: 'flex:1;min-width:0' }, el('div', { style: 'font-weight:700' }, it.name), el('div', { class: 'muted', style: 'font-size:.82em' }, meta), rec ? el('div', { style: 'font-size:.8em;color:var(--color-accent-2-700)' }, rec) : null),
+        el('div', { style: 'flex:1;min-width:0' }, el('div', { style: 'font-weight:700' }, it.name), el('div', { class: 'meta' }, meta), rec ? el('div', { class: 'rec' }, rec) : null),
         el('button', { class: 'btn btn-secondary btn-icon', 'aria-label': t('editPerson'), onclick: () => openEditor(it), html: M.icon('pencil', 18) }),
         el('button', { class: 'btn btn-secondary btn-icon', 'aria-label': t('removePhoto'), onclick: () => removeItem(it), html: M.icon('trash', 18) })));
     });
+    screen.append(c);
+  }
+  function renderManageMembers(screen) {   // Family members sub-tab
+    head(screen, t('mngKicker'), t('mngTitle'));
+    screen.append(manageSubtabs());
+    const c = el('div', { class: 'content' });
     c.append(familyMembersSection());
     screen.append(c);
   }
   function familyMembersSection() {
     const wrap = el('div', {});
-    wrap.append(el('h2', { class: 'display', style: 'font-size:1.2em;margin:24px 0 4px' }, t('familyMembers')),
-      el('p', { class: 'muted', style: 'font-size:.82em;margin:0 0 10px' }, t('familyNote')));
+    wrap.append(el('p', { class: 'muted', style: 'margin:2px 0 12px' }, t('familyNote')));
     state.profiles.forEach((pf, i) => wrap.append(el('div', { class: 'mrow' },
       el('span', { class: 'pavatar', style: 'background:' + tintFor(pf, i) }, (pf.name || '?').charAt(0).toUpperCase()),
-      el('div', { style: 'flex:1;min-width:0' }, el('div', { style: 'font-weight:700' }, pf.name), el('div', { class: 'muted', style: 'font-size:.82em' }, pf.relation || '')),
+      el('div', { style: 'flex:1;min-width:0' }, el('div', { style: 'font-weight:700' }, pf.name), el('div', { class: 'meta' }, pf.relation || '')),
       el('button', { class: 'btn btn-secondary btn-icon', 'aria-label': t('editPerson'), onclick: () => openPerson(pf), html: M.icon('pencil', 18) }),
       (state.profiles.length > 1 && pf.role === 'owner') ? el('button', { class: 'btn btn-secondary btn-icon', 'aria-label': t('removePhoto'), onclick: () => removePerson(pf), html: M.icon('trash', 18) }) : null)));
     wrap.append(el('button', { class: 'btn btn-secondary btn-block', style: 'margin-top:6px', onclick: () => openPerson(null), html: M.icon('plus', 18, 'currentColor', 2.6) + ' ' + esc(t('addMember')) }));
@@ -329,7 +366,7 @@
     const seg = el('div', { class: 'daytoggles' });
     [['never', 'endNever'], ['date', 'endOnDate'], ['count', 'endAfter']].forEach(([m, k]) => seg.append(el('button', { class: 'btn ' + (e.endMode === m ? 'btn-primary' : 'btn-secondary') + ' small', onclick: () => { e.endMode = m; renderEditor(); } }, t(k))));
     wrap.append(seg);
-    if (e.endMode === 'date') wrap.append(el('input', { class: 'input', type: 'date', style: 'margin-top:8px', value: e.endDate || '', onchange: (ev) => e.endDate = ev.target.value }));
+    if (e.endMode === 'date') { const di = el('input', { class: 'input', style: 'margin-top:8px', inputmode: 'numeric', value: isoToDMY(e.endDate), placeholder: state.lang === 'ro' ? 'zz/ll/aaaa' : 'dd/mm/yyyy' }); di.addEventListener('input', () => { e.endDate = dmyToIso(di.value); }); wrap.append(di); }
     if (e.endMode === 'count') wrap.append(el('div', { style: 'display:flex;align-items:center;gap:8px;margin-top:8px' }, el('input', { class: 'input', type: 'number', min: 1, value: e.endCount || 1, style: 'max-width:120px', onchange: (ev) => e.endCount = parseInt(ev.target.value, 10) }), t('endTimes')));
     return wrap;
   }
