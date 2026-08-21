@@ -5,6 +5,7 @@
   const $ = (s, r = document) => r.querySelector(s);
   const el = (t, a = {}, ...k) => { const n = document.createElement(t); for (const [x, v] of Object.entries(a)) { if (v == null) continue; if (x === 'class') n.className = v; else if (x === 'html') n.innerHTML = v; else if (x.startsWith('on')) n.addEventListener(x.slice(2), v); else n.setAttribute(x, v); } for (const c of k.flat()) if (c != null) n.append(c.nodeType ? c : document.createTextNode(c)); return n; };
   const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const removeDialogs = () => document.querySelectorAll('.dialog-backdrop').forEach(n => n.remove());
   const M = window.MED;
   const TINTS = ['var(--color-accent-500)', 'var(--color-accent-2-500)', 'var(--color-accent-600)', 'var(--color-accent-2-600)', 'var(--color-accent-400)'];
 
@@ -60,7 +61,7 @@
   }
 
   /* ---------------- shell ---------------- */
-  function render() { applyPrefs(); if (!state.user) return renderLogin(); const f = $('#frame'); f.innerHTML = ''; const screen = el('div', { class: 'screen', id: 'screen' }); f.append(screen, tabbar()); routeTab(screen); }
+  function render() { applyPrefs(); removeDialogs(); if (!state.user) return renderLogin(); const f = $('#frame'); f.innerHTML = ''; const screen = el('div', { class: 'screen', id: 'screen' }); f.append(screen, tabbar()); routeTab(screen); }
   const TAB_ICON = { today: 'today', history: 'calendar', manage: 'plus', settings: 'gear' };
   const TAB_LABEL = { today: 'navToday', history: 'navHistory', manage: 'navManage', settings: 'navSettings' };
   function tabbar() {
@@ -235,6 +236,7 @@
     renderEditor();
   }
   function renderEditor() {
+    removeDialogs();
     const e = state.editItem; const pid = state.manageSel;
     const bd = el('div', { class: 'dialog-backdrop', onclick: (ev) => { if (ev.target === bd) closeDialog(); } });
     const field = (labelKey, ctrl) => el('div', { class: 'field' }, el('label', {}, t(labelKey)), ctrl);
@@ -269,7 +271,7 @@
             end_mode: e.endMode, end_date: e.endDate, end_count: e.endCount, photo_url: e.photo };
           if (e.isNew) await api('/api/items.php?action=create', { method: 'POST', body });
           else await api('/api/items.php?action=update', { method: 'POST', body: Object.assign({ id: e.id }, body) });
-          state.editItem = null; await loadDay(pid); render();
+          state.editItem = null; removeDialogs(); await loadDay(pid); render();
         } }, t('save'))));
     bd.append(dc); document.body.append(bd);
   }
@@ -285,7 +287,7 @@
     if (e.endMode === 'count') wrap.append(el('div', { style: 'display:flex;align-items:center;gap:8px;margin-top:8px' }, el('input', { class: 'input', type: 'number', min: 1, value: e.endCount || 1, style: 'max-width:120px', onchange: (ev) => e.endCount = parseInt(ev.target.value, 10) }), t('endTimes')));
     return wrap;
   }
-  function closeDialog() { state.editItem = null; const b = $('.dialog-backdrop'); if (b) b.remove(); }
+  function closeDialog() { state.editItem = null; removeDialogs(); }
 
   /* ---------------- Settings ---------------- */
   function renderSettings(screen) {
