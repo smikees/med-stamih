@@ -10,6 +10,10 @@ body {
 }
 h1, h2, h3, .display { font-family: var(--font-heading, 'Caprasimo'), cursive; letter-spacing: -0.015em; line-height: 1.12; }
 :lang(ro) h1, :lang(ro) h2, :lang(ro) h3, :lang(ro) .display { font-family: 'Baloo 2', system-ui, sans-serif; font-weight: 700; }
+/* Caprasimo lacks Romanian diacritics (ă ș ț î) — for RO, swap the heading FONT
+   VARIABLE itself so every consumer (headings, .btn, .dialog-title, .card-title)
+   uses Baloo 2 and diacritics render consistently. */
+html[lang="ro"] { --font-heading: 'Baloo 2', system-ui, sans-serif; --font-heading-weight: 700; }
 
 /* The phone-shaped app column, centered on desktop, full-bleed on mobile. */
 #frame {
@@ -124,3 +128,7 @@ h1, h2, h3, .display { font-family: var(--font-heading, 'Caprasimo'), cursive; l
 .segrow { display: flex; gap: 8px; flex-wrap: wrap; }
 .set-label { font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
 .dialog-body .field { margin-bottom: 12px; }
+/* dialog must sit above the app content (content z:1) and tab bar (z:5) */
+.dialog-backdrop { z-index: 1000; }
+.dialog { position: relative; z-index: 1001; max-height: 90vh; overflow-y: auto; width: min(440px, 100%); }
+.dialog-title { font-size: 1.5em; margin-bottom: 4px; }
