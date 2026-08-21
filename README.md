@@ -154,6 +154,17 @@ admin/                create local users, profiles, sharing
 
 ---
 
+## License
+
+Alongside is free software licensed under the **GNU Affero General Public License v3.0**
+(AGPL-3.0) — see [LICENSE](LICENSE). In short: you are free to use, study, share and
+modify it, but if you run a modified version as a network service, you must make the
+source of that version available to its users.
+
+Copyright © 2026 Mihai Stănculescu.
+
+---
+
 ## Status
 
 Actively used and iterated. Romanian-first, English-ready. Contributions and issues
