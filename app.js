@@ -22,6 +22,7 @@
     manageTab: 'lists',            // Manage sub-tab: 'lists' | 'members'
     weekOffset: 0,                 // History: 0 = this week, negative = past
     histDirty: false, histSnap: null,
+    dayNote: '',                   // per-day note for the currently-loaded profile+today
   };
   const SIZES = { Standard: 17, Large: 19, 'Extra large': 22 };
   const t = (k) => (window.STR[state.lang] && window.STR[state.lang][k]) ?? (window.STR.en[k] ?? k);
@@ -65,14 +66,15 @@
     const [it, dy] = await Promise.all([api('/api/items.php?action=list&profile=' + pid), api('/api/logs.php?action=day&profile=' + pid + '&date=' + todayISO())]);
     state.items = (it.items || []).map(normItem);
     state.logs = dy.logs || {};
-    dataCache[pid] = { items: state.items, logs: state.logs };
+    state.dayNote = dy.day_note || '';
+    dataCache[pid] = { items: state.items, logs: state.logs, dayNote: state.dayNote };
   }
   async function refreshDay(pid, key) {   // background revalidate after showing cached data
     try {
       const [it, dy] = await Promise.all([api('/api/items.php?action=list&profile=' + pid), api('/api/logs.php?action=day&profile=' + pid + '&date=' + todayISO())]);
-      const items = (it.items || []).map(normItem), logs = dy.logs || {};
-      dataCache[pid] = { items, logs };
-      if (loadedFor === key) { state.items = items; state.logs = logs; render(); }
+      const items = (it.items || []).map(normItem), logs = dy.logs || {}, dayNote = dy.day_note || '';
+      dataCache[pid] = { items, logs, dayNote };
+      if (loadedFor === key) { state.items = items; state.logs = logs; state.dayNote = dayNote; render(); }
     } catch (e) {}
   }
   async function setLog(itemId, status, takenMin, note) {
@@ -122,7 +124,7 @@
     if (loadedFor === key) { state.tab === 'today' ? renderToday(screen) : renderManage(screen); return; }
     loadedFor = key;
     if (dataCache[pid]) {                       // instant from cache, revalidate in background
-      state.items = dataCache[pid].items; state.logs = dataCache[pid].logs;
+      state.items = dataCache[pid].items; state.logs = dataCache[pid].logs; state.dayNote = dataCache[pid].dayNote || '';
       render(); refreshDay(pid, key); return;
     }
     renderSkeleton(screen);                      // first time: shimmer, then load
@@ -163,7 +165,7 @@
     c.append(reminderBanner(pills));
     // pill sections by group
     M.GROUPS.forEach(g => {
-      const its = pills.filter(x => x.group === g.key).sort((a, b) => a.time - b.time);
+      const its = pills.filter(x => M.groupForMin(x.time) === g.key).sort((a, b) => a.time - b.time);
       if (!its.length) return;
       c.append(sectionHeader(g, its));
       its.forEach(it => c.append(itemCard(it)));
@@ -171,6 +173,7 @@
     // activities
     const acts = all.filter(x => x.type === 'activity').sort((a, b) => a.time - b.time);
     if (acts.length) { c.append(el('div', { class: 'sec-head' }, el('span', { class: 'sec-ico', html: M.icon('activity', 20, 'var(--color-accent-2-700)') }), el('span', { class: 'sec-title display' }, t('secActivities')))); acts.forEach(it => c.append(itemCard(it))); }
+    c.append(dayNoteCard());
     screen.append(c);
   }
   function summaryCard(total, done, skipped, pending) {
@@ -182,7 +185,7 @@
   }
   function reminderBanner(pills) {
     const nm = nowMin(); let cls = 'rb-soon', txt = '';
-    const secState = (g) => { const its = pills.filter(x => x.group === g.key); if (!its.length) return null; const pend = its.filter(x => !state.logs[x.id]).length; return { g, pend, tone: pend === 0 ? 'done' : (nm >= g.start && nm < g.end) ? 'due' : (nm >= g.end ? 'over' : 'soon'), firstTime: its.sort((a, b) => a.time - b.time)[0].time }; };
+    const secState = (g) => { const its = pills.filter(x => M.groupForMin(x.time) === g.key); if (!its.length) return null; const pend = its.filter(x => !state.logs[x.id]).length; return { g, pend, tone: pend === 0 ? 'done' : (nm >= g.start && nm < g.end) ? 'due' : (nm >= g.end ? 'over' : 'soon'), firstTime: its.sort((a, b) => a.time - b.time)[0].time }; };
     const secs = M.GROUPS.map(secState).filter(Boolean);
     const over = secs.find(s => s.tone === 'over' && s.pend), due = secs.find(s => s.tone === 'due' && s.pend), next = secs.filter(s => s.pend && s.tone === 'soon').sort((a, b) => a.firstTime - b.firstTime)[0];
     if (over) { cls = 'rb-alert'; txt = fmt('remOverdue', { group: t('group' + cap(over.g.key)) }); }
@@ -212,8 +215,33 @@
       el('div', { class: 'itc-top' }, el('span', { class: 'itc-name' }, it.name), el('span', { class: 'itc-time muted', html: M.icon('clock', 14, 'currentColor', 2.4) + ' ' + esc(fmtMin(it.time)) })),
       detail ? el('div', { class: 'itc-detail muted' }, detail) : null,
       it.note ? el('span', { class: 'itc-note' }, it.note) : null,
-      actionZone(it, l, isAct));
+      actionZone(it, l, isAct),
+      l ? noteRow(it, l) : null);
     return el('div', { class: 'card itemcard elev-sm' }, av, body);
+  }
+  function noteRow(it, l) {
+    const wrap = el('div', { class: 'itc-noterow' });
+    const edit = () => {
+      const inp = el('input', { class: 'input', value: l.note || '', placeholder: t('notePh'), maxlength: 300 });
+      let saved = false;
+      const save = () => { if (saved) return; saved = true; const v = inp.value.trim(); setLog(it.id, l.status, l.taken_min ?? null, v || null); };
+      inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); inp.blur(); } });
+      inp.addEventListener('blur', save);
+      wrap.innerHTML = ''; wrap.append(inp); inp.focus();
+    };
+    if (l.note) wrap.append(el('span', { class: 'itc-lognote', onclick: edit, html: M.icon('note', 13, 'currentColor', 2) + ' ' + esc(l.note) }),
+      el('button', { class: 'linklike small', onclick: edit }, t('btnChange')));
+    else wrap.append(el('button', { class: 'linklike', onclick: edit, html: M.icon('note', 13, 'currentColor', 2) + ' ' + esc(t('addNote')) }));
+    return wrap;
+  }
+  function dayNoteCard() {
+    const wrap = el('div', { class: 'card daynote elev-sm' }, el('div', { class: 'dn-label', html: M.icon('note', 16, 'currentColor', 2.2) + ' ' + esc(t('noteToday')) }));
+    const ta = el('textarea', { class: 'input dn-ta', rows: 2, placeholder: t('noteTodayPh') });
+    ta.value = state.dayNote || '';
+    let saved = state.dayNote || '';
+    ta.addEventListener('blur', async () => { const v = ta.value.trim(); if (v === saved) return; saved = v; state.dayNote = v; if (dataCache[state.sel]) dataCache[state.sel].dayNote = v; try { await api('/api/logs.php?action=daynote', { method: 'POST', body: { profile_id: state.sel, date: todayISO(), note: v } }); } catch (e) {} });
+    wrap.append(ta);
+    return wrap;
   }
   function actionZone(it, l, isAct) {
     if (!l) return el('div', { class: 'itc-actions' },
@@ -251,8 +279,8 @@
       el('button', { class: 'btn btn-primary', onclick: () => openEditor(null), html: M.icon('plus', 18, 'currentColor', 2.6) + ' ' + esc(t('addBtn')) })));
     if (!state.items.length) c.append(el('p', { class: 'soon' }, fmt('noList', { name: personName(p) })));
     state.items.slice().sort((a, b) => (a.group + a.time) < (b.group + b.time) ? -1 : 1).forEach(it => {
-      const meta = it.type === 'pill' ? [fmt('take', { n: it.count }), t('group' + cap(it.group)), it.purpose].filter(Boolean).join(' · ')
-        : [t('typeActivity'), t('group' + cap(it.group)), it.purpose].filter(Boolean).join(' · ');
+      const meta = it.type === 'pill' ? [fmt('take', { n: it.count }), t('group' + cap(M.groupForMin(it.time))), it.purpose].filter(Boolean).join(' · ')
+        : [t('typeActivity'), t('group' + cap(M.groupForMin(it.time))), it.purpose].filter(Boolean).join(' · ');
       const rec = recurText(it);
       c.append(el('div', { class: 'mrow card' },
         state.showPhotos ? itemAvatar(it, 'mrow-av', it.type === 'activity', 22) : null,
@@ -312,19 +340,20 @@
     state.profiles.forEach((pf, i) => wrap.append(el('div', { class: 'mrow' },
       el('span', { class: 'pavatar', style: 'background:' + tintFor(pf, i) }, (pf.name || '?').charAt(0).toUpperCase()),
       el('div', { style: 'flex:1;min-width:0' }, el('div', { style: 'font-weight:700' }, pf.name), el('div', { class: 'meta' }, pf.relation || '')),
+      pf.role === 'owner' ? el('button', { class: 'btn btn-secondary btn-icon', 'aria-label': t('shareTitle'), title: t('shareTitle'), onclick: () => openPerson(pf, true), html: M.icon('share', 18) }) : null,
       el('button', { class: 'btn btn-secondary btn-icon', 'aria-label': t('editPerson'), onclick: () => openPerson(pf), html: M.icon('pencil', 18) }),
       (state.profiles.length > 1 && pf.role === 'owner') ? el('button', { class: 'btn btn-secondary btn-icon', 'aria-label': t('removePhoto'), onclick: () => removePerson(pf), html: M.icon('trash', 18) }) : null)));
     wrap.append(el('button', { class: 'btn btn-secondary btn-block', style: 'margin-top:6px', onclick: () => openPerson(null), html: M.icon('plus', 18, 'currentColor', 2.6) + ' ' + esc(t('addMember')) }));
     return wrap;
   }
-  function openPerson(pf) { state.personDlg = pf ? { id: pf.id, name: pf.name, relation: pf.relation, timezone: pf.timezone, role: pf.role, members: undefined } : { isNew: true, name: '', relation: '' }; if (pf && pf.role === 'owner') loadMembers(pf.id); renderPerson(); }
+  function openPerson(pf, focusShare) { state.personDlg = pf ? { id: pf.id, name: pf.name, relation: pf.relation, timezone: pf.timezone, role: pf.role, members: undefined, _focusShare: !!focusShare } : { isNew: true, name: '', relation: '' }; if (pf && pf.role === 'owner') loadMembers(pf.id); renderPerson(); }
   function closePerson() { state.personDlg = null; removeDialogs(); }
   async function loadMembers(pid) { try { const r = await api('/api/profiles.php?action=members&profile=' + pid); if (state.personDlg && state.personDlg.id === pid) { state.personDlg.members = r.members || []; renderPerson(); } } catch (e) { if (state.personDlg && state.personDlg.id === pid) { state.personDlg.members = []; renderPerson(); } } }
   async function shareAdd(email) { email = (email || '').trim().toLowerCase(); if (!email) return; try { await api('/api/profiles.php?action=share', { method: 'POST', body: { id: state.personDlg.id, email } }); toast(t('shareAdded')); await loadMembers(state.personDlg.id); } catch (e) { toast(t('shareNoUser')); } }
   async function shareRemove(email) { try { await api('/api/profiles.php?action=unshare', { method: 'POST', body: { id: state.personDlg.id, email } }); } catch (e) {} await loadMembers(state.personDlg.id); }
   function shareSection(e) {
-    const wrap = el('div', { class: 'field', style: 'margin-top:4px' },
-      el('label', {}, t('shareTitle')),
+    const wrap = el('div', { class: 'field share-sec', style: 'margin-top:4px' },
+      el('label', { html: M.icon('share', 15) + ' ' + esc(t('shareTitle')) }),
       el('p', { class: 'muted', style: 'font-size:.82em;margin:2px 0 8px' }, t('shareNote')));
     if (e.members === undefined) { wrap.append(el('div', { class: 'sk', style: 'height:40px' })); return wrap; }
     e.members.forEach(m => wrap.append(el('div', { class: 'mrow', style: 'margin-bottom:6px' },
@@ -357,6 +386,7 @@
           else { await api('/api/profiles.php?action=rename', { method: 'POST', body: { id: e.id, name, relation, timezone: e.timezone || 'Europe/Bucharest' } }); state.personDlg = null; removeDialogs(); await loadProfiles(); render(); }
         } }, t(e.isNew ? 'addPersonBtn' : 'savePersonBtn'))));
     bd.append(dc); document.body.append(bd);
+    if (e._focusShare) { e._focusShare = false; const s = dc.querySelector('.share-sec'); if (s) setTimeout(() => s.scrollIntoView({ behavior: 'smooth', block: 'center' }), 60); }
   }
   async function removePerson(pf) {
     if (!window.confirm(t('removePhoto') + ' ' + pf.name + '?')) return;
@@ -385,7 +415,11 @@
   function itemAvatar(it, cls, isAct, size) {
     const src = photoSrc(it);
     const span = el('span', { class: cls + ' ' + (isAct ? 'act' : 'pill'), html: src ? '' : M.icon(isAct ? 'activity' : 'pill', size, isAct ? 'var(--color-accent-2-700)' : 'var(--color-accent-700)') });
-    if (src) { span.style.backgroundImage = 'url(' + src + ')'; span.style.backgroundSize = 'cover'; span.style.backgroundPosition = 'center'; }
+    if (src) {
+      span.style.backgroundImage = 'url(' + src + ')'; span.style.backgroundSize = 'cover'; span.style.backgroundPosition = 'center';
+      // thin type-colored border so pill vs activity stays readable once a photo hides the icon
+      span.style.border = '2.5px solid ' + (isAct ? 'var(--color-accent-2-700)' : 'var(--color-accent-700)');
+    }
     return span;
   }
   function openPhoto(it) {
@@ -448,7 +482,6 @@
     const nameI = input(e.name, 'phName');
     const typeS = sel(['pill', 'activity'], [t('typeMedicine'), t('typeActivity')], e.type, v => { e.type = v; });
     const countI = el('input', { class: 'input', type: 'number', min: 1, value: e.count });
-    const whenS = sel(['morning', 'noon', 'evening', 'bedtime'], ['groupMorning', 'groupNoon', 'groupEvening', 'groupBedtime'].map(t), e.group, v => { e.group = v; });
     const timeS = el('select', { class: 'input' }); for (let m = 0; m < 1440; m += 30) timeS.append(el('option', { value: m, selected: Math.abs(e.time - m) < 15 ? 'selected' : null }, fmtMin(m)));
     const repeatS = sel(['daily', 'weekly', 'monthly'], [t('repDaily'), t('repWeekly'), t('repMonthly')], e.freq, v => { e.freq = v; renderEditor(); });
     const purposeI = input(e.purpose, 'phFor'); const noteI = input(e.note, 'phNote');
@@ -464,7 +497,7 @@
         field('fName', nameI),
         field('fPhoto', photoControl(e, pid)),
         el('div', { class: 'grid2' }, field('fType', typeS), field('fHowMany', countI)),
-        el('div', { class: 'grid2' }, field('fWhen', whenS), field('fTime', timeS)),
+        field('fTime', timeS),
         field('fRepeat', repeatS),
         e.freq === 'weekly' ? field('fDays', dayToggles(e)) : null,
         e.freq === 'monthly' ? field('fDom', domSelect(e)) : null,
@@ -477,7 +510,7 @@
         el('button', { class: 'btn btn-primary', onclick: async () => {
           e.name = nameI.value.trim(); if (!e.name) { nameI.focus(); return; }
           e.count = Math.max(1, parseInt(countI.value, 10) || 1); e.time = parseInt(timeS.value, 10);
-          const body = { profile_id: pid, type: e.type, name: e.name, count: e.count, grp: e.group, time_min: e.time,
+          const body = { profile_id: pid, type: e.type, name: e.name, count: e.count, grp: M.groupForMin(e.time), time_min: e.time,
             purpose: purposeI.value.trim(), note: noteI.value.trim(), freq: e.freq, days: e.days, dom: e.dom,
             end_mode: e.endMode, end_date: e.endDate, end_count: e.endCount, photo_url: e.photo };
           if (e.isNew) await api('/api/items.php?action=create', { method: 'POST', body });
@@ -510,6 +543,13 @@
       seg(t('setTextSize'), [['Standard', t('tsStandard')], ['Large', t('tsLarge')], ['Extra large', t('tsXL')]], state.textSize, v => { state.textSize = v; localStorage.setItem('med_text', v); render(); }),
       seg(t('setPhotos'), [[true, t('onWord')], [false, t('offWord')]], state.showPhotos, v => { state.showPhotos = v; localStorage.setItem('med_photos', v ? '1' : '0'); render(); }),
     );
+    if (state.sel) c.append(el('div', { class: 'card', style: 'padding:14px' },
+      el('div', { class: 'set-label', html: M.icon('download', 18) + ' ' + esc(t('exportTitle')) }),
+      el('p', { class: 'muted', style: 'font-size:.82em;margin:2px 0 10px' }, fmt('exportNote', { name: personName(cur()) })),
+      el('div', { class: 'segrow' },
+        el('a', { class: 'btn btn-secondary', href: '/api/export.php?profile=' + state.sel + '&days=30' }, t('export30')),
+        el('a', { class: 'btn btn-secondary', href: '/api/export.php?profile=' + state.sel + '&days=90' }, t('export90')),
+        el('a', { class: 'btn btn-secondary', href: '/api/export.php?profile=' + state.sel + '&days=365' }, t('exportAll')))));
     if (state.user.admin) c.append(el('a', { class: 'btn btn-secondary btn-block', href: '/admin/' }, t('admin')));
     c.append(el('button', { class: 'btn btn-ghost btn-block', onclick: async () => { await api('/auth/logout.php', { method: 'POST' }); location.reload(); } }, t('signOut')));
     c.append(el('p', { class: 'center muted', style: 'font-size:.8em' }, state.user.email));
@@ -635,7 +675,7 @@
     const out = []; const today = todayISO();
     for (let i = 1; i <= 6 && out.length < 5; i++) {
       const iso = addDaysISO(today, -i); const d = new Date(iso + 'T00:00:00');
-      items.forEach(it => { if (out.length >= 5) return; if (!M.isScheduledOn(it, d)) return; const l = hlog(pid, iso, it.id); if (l && l.status === 'taken') return; out.push({ name: it.name, iso, group: it.group, kind: l && l.status === 'skipped' ? 'skip' : 'none' }); });
+      items.forEach(it => { if (out.length >= 5) return; if (!M.isScheduledOn(it, d)) return; const l = hlog(pid, iso, it.id); if (l && l.status === 'taken') return; out.push({ name: it.name, iso, group: M.groupForMin(it.time), kind: l && l.status === 'skipped' ? 'skip' : 'none' }); });
     }
     return out.slice(0, 5);
   }
@@ -700,5 +740,22 @@
     loadedFor = null; render();
   }
   boot();
+  // live-ish cross-account sync: quietly re-fetch today's logs; re-render only on change
+  async function pollTick() {
+    if (!state.user || document.hidden) return;
+    if (document.querySelector('.dialog-backdrop')) return;                 // don't disrupt a dialog
+    const ae = document.activeElement; if (ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return; // or typing
+    if (state.tab !== 'today' || !state.sel) return;
+    try {
+      const dy = await api('/api/logs.php?action=day&profile=' + state.sel + '&date=' + todayISO());
+      const logs = dy.logs || {}, dn = dy.day_note || '';
+      if (JSON.stringify(logs) !== JSON.stringify(state.logs) || dn !== (state.dayNote || '')) {
+        state.logs = logs; state.dayNote = dn;
+        if (dataCache[state.sel]) { dataCache[state.sel].logs = logs; dataCache[state.sel].dayNote = dn; }
+        render();
+      }
+    } catch (e) {}
+  }
+  setInterval(pollTick, 30000);
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
 })();

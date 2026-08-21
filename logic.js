@@ -31,6 +31,9 @@
     chevronLeft: [['path', { d: 'm15 18-6-6 6-6' }]],
     chevronRight: [['path', { d: 'm9 18 6-6-6-6' }]],
     rotate: [['path', { d: 'M3 7v6h6' }], ['path', { d: 'M21 17a9 9 0 0 0-9-9 8.97 8.97 0 0 0-6.34 2.66L3 13' }]],
+    share: [['circle', { cx: 18, cy: 5, r: 3 }], ['circle', { cx: 6, cy: 12, r: 3 }], ['circle', { cx: 18, cy: 19, r: 3 }], ['path', { d: 'm8.6 13.5 6.8 3.9' }], ['path', { d: 'm15.4 6.6-6.8 3.9' }]],
+    download: [['path', { d: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4' }], ['path', { d: 'M7 10l5 5 5-5' }], ['path', { d: 'M12 15V3' }]],
+    note: [['path', { d: 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z' }], ['path', { d: 'M14 2v6h6' }], ['path', { d: 'M9 13h6' }], ['path', { d: 'M9 17h4' }]],
   };
 
   function icon(name, size = 24, color = 'currentColor', sw = 2.75) {
@@ -76,5 +79,14 @@
     return d.getDate() + ' ' + mo[d.getMonth()];
   }
 
-  window.MED = { GROUPS, ICONS, icon, isoOf, fmtMin, pad, isScheduledOn, wdShort, wdChip, shortDate };
+  // daypart derived from the item's time, so Today/History sections follow the clock
+  function groupForMin(m) {
+    m = ((Math.round(m) % 1440) + 1440) % 1440;
+    if (m >= 300 && m < 660) return 'morning';   // 05:00–10:59
+    if (m >= 660 && m < 960) return 'noon';       // 11:00–15:59
+    if (m >= 960 && m < 1260) return 'evening';   // 16:00–20:59
+    return 'bedtime';                             // 21:00–04:59
+  }
+
+  window.MED = { GROUPS, ICONS, icon, isoOf, fmtMin, pad, isScheduledOn, groupForMin, wdShort, wdChip, shortDate };
 })();
