@@ -14,3 +14,5 @@ vendor/
 # design handoff + planning docs stay in the repo root but are NOT app code;
 # they are excluded from the FTP deploy in .github/workflows/deploy.yml
 client_secret_*.json
+.ftp.env
+_seed.php

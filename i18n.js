@@ -1,28 +1,42 @@
-/* i18n.js — string table. Phase 1 covers login + shell; the full handoff STR
-   (RO/EN) is ported in Phase 2 straight from source/…dc.html. RO is default. */
+/* i18n.js — full bilingual copy, ported verbatim from the handoff source (RO default). */
 window.STR = {
-  ro: {
-    brand: "Alongside", tagline: "Medicamente zilnice, împreună",
-    welcome: "Bine ai revenit", signin_sub: "Intră în lista zilnică a familiei.",
-    email: "Email", password: "Parolă", signin: "Intră în cont",
-    google: "Continuă cu Google", or: "sau", bad_credentials: "Email sau parolă greșite.",
-    help: "Probleme la autentificare? Sună-l pe administrator.",
-    today: "Azi", history: "Istoric", manage: "Setează", settings: "Setări",
-    good_morning: "Bună dimineața", good_afternoon: "Bună ziua", good_evening: "Bună seara",
-    profiles: "Persoane", no_profiles: "Nicio persoană încă. Adaugă din pagina de administrare.",
-    signout: "Ieși din cont", coming_soon: "În curând — construim această secțiune.",
-    admin: "Administrare",
-  },
-  en: {
-    brand: "Alongside", tagline: "Daily medicines, together",
-    welcome: "Welcome back", signin_sub: "Sign in to your family's daily list.",
-    email: "Email", password: "Password", signin: "Sign in",
-    google: "Continue with Google", or: "or", bad_credentials: "Wrong email or password.",
-    help: "Trouble signing in? Call your administrator.",
-    today: "Today", history: "History", manage: "Manage", settings: "Settings",
-    good_morning: "Good morning", good_afternoon: "Good afternoon", good_evening: "Good evening",
-    profiles: "People", no_profiles: "No people yet. Add them from the admin page.",
-    signout: "Sign out", coming_soon: "Coming soon — we're building this section.",
-    admin: "Admin",
-  },
+    en: {
+      tagline:'Daily medicines, together', welcome:'Welcome back', signInSub:"Sign in to your family's daily list.", familyName:'The Bennett family', email:'Email', password:'Password', signIn:'Sign in', help:'Trouble signing in? Call Sarah on (555) 010-2929',
+      navToday:'Today', navHistory:'History', navManage:'Manage', navSettings:'Settings',
+      greetMorning:'Good morning', greetAfternoon:'Good afternoon', greetEvening:'Good evening',
+      daysTitle:"{name}'s day", weekTitle:"{name}'s week",
+      sumAllDone:'All done for today', sumNothing:'Nothing scheduled', sumPillLeft:'{n} pill left to take', sumPillsLeft:'{n} pills left to take', sumTaken:'{done} of {total} taken', sumNotTaken:'{n} not taken', sumAddManage:'Add items in Manage',
+      remOverdue:'{group} medicines are overdue', remDue:'{group} medicines are due now', remNext:'Next reminder · {group} at {time}', remAllDone:'All done for today — lovely work',
+      badgeAllDone:'All done', badgeDue:'Due now', badgeOverdue:'Overdue', badgeSoon:'Coming up',
+      reminderWord:'Reminder {time}', secActivities:'Activities',
+      take:'Take {n}', forPurpose:'for {purpose}', takenAt:'Taken at {time}', takenWord:'Taken', markedNot:'Marked not taken',
+      btnTaken:'Taken', btnDidnt:"Didn't take", btnDone:'Done', btnDidntDo:"Didn't do", btnChange:'Change', editTime:'Edit time',
+      histKicker:'This week', takenThisWeek:'taken this week', ofDoses:'of {n} doses', weekTaken:'of {n} taken this week', legendTaken:'Taken', legendNot:'Not taken', legendNo:'No record', legendNA:'Not scheduled', tapCorrect:'Tap any square to correct it — saved for the whole family.', cancelChanges:'Cancel changes', saveChanges:'Save changes', viewAll:'View entire history', allHistTitle:'Full history', last30:'Last 30 days', weekThis:'This week', weekLast:'Last week', prevWeek:'Previous week', nextWeek:'Next week', close:'Close', noRecordsWeek:'Nothing scheduled this week.', fRepeat:'Repeats', repDaily:'Every day', repWeekly:'Weekly', repMonthly:'Monthly', fDays:'On these days', fDom:'Day of the month', fEnd:'Ends (optional)', endNever:'No end', endOnDate:'On a date', endAfter:'After N times', fEndCount:'Number of times', endTimes:'times', domLabel:'day {n}', until:'until {date}', untilCount:'{n} times', worthLook:'Worth a look', missNot:'not taken', missNo:'no record',
+      mngKicker:'Set up', mngTitle:'Manage', listOf:"{name}'s list", addBtn:'Add', familyMembers:'Family members', familyNote:'Everyone signed in to this family can view and update any list.', addMember:'Add a family member', fixTitle:'Fixing a mistake', fixBody:'Open History and tap any day to change whether something was taken.', goHistoryBtn:'Go to History', signOut:'Sign out', noList:"Nothing on {name}'s list yet.", addFirst:'Add the first item',
+      setKicker:'Preferences', setTitle:'Settings', setLanguage:'Language', setTextSize:'Text size', tsStandard:'Standard', tsLarge:'Large', tsXL:'Extra large', setPhotos:'Show pill photos', onWord:'On', offWord:'Off',
+      editAdd:'Add to the list', editEdit:'Edit item', fName:'Name', fType:'Type', fHowMany:'How many', fWhen:'When', fTime:'Time', fFor:"What it's for (optional)", fNote:'Special note (optional)', cancel:'Cancel', save:'Save', phName:'e.g. Metformin, or Back exercise', phFor:'e.g. Blood pressure', phNote:'e.g. take with food', fPhoto:'Photo (optional)', addPhoto:'Add photo', changePhoto:'Change photo', removePhoto:'Remove', typeMedicine:'Medicine', typeActivity:'Activity / task',
+      personAddTitle:'Add a family member', personAddSub:"They'll appear in the switcher with an empty list you can fill in.", fRelationship:'Relationship', addPersonBtn:'Add', phPersonName:'e.g. Eleanor', phRelationship:'e.g. Mother', personEditTitle:'Edit family member', savePersonBtn:'Save', editPerson:'Edit',
+      groupMorning:'Morning', groupNoon:'Midday', groupEvening:'Evening', groupBedtime:'Bedtime',
+    },
+    ro: {
+      tagline:'Medicamente zilnice, împreună', welcome:'Bine ai revenit', signInSub:'Conectează-te la lista zilnică a familiei.', familyName:'Familia Bennett', email:'E-mail', password:'Parolă', signIn:'Conectează-te', help:'Probleme la conectare? Sun-o pe Sarah la (555) 010-2929',
+      navToday:'Azi', navHistory:'Istoric', navManage:'Gestionare', navSettings:'Setări',
+      greetMorning:'Bună dimineața', greetAfternoon:'Bună ziua', greetEvening:'Bună seara',
+      daysTitle:'Ziua lui {name}', weekTitle:'Săptămâna lui {name}',
+      sumAllDone:'Gata pe azi', sumNothing:'Nimic programat', sumPillLeft:'Mai ai {n} pastilă de luat', sumPillsLeft:'Mai ai {n} pastile de luat', sumTaken:'{done} din {total} luate', sumNotTaken:'{n} neluate', sumAddManage:'Adaugă din Gestionare',
+      remOverdue:'Medicamentele de {group} sunt întârziate', remDue:'Medicamentele de {group} trebuie luate acum', remNext:'Următoarea amintire · {group} la {time}', remAllDone:'Gata pe azi — bravo!',
+      badgeAllDone:'Gata', badgeDue:'Acum', badgeOverdue:'Întârziat', badgeSoon:'Urmează',
+      reminderWord:'Reamintire la {time}', secActivities:'Activități',
+      take:'ia {n}', forPurpose:'pentru {purpose}', takenAt:'Luat la {time}', takenWord:'Luat', markedNot:'Marcat ca neluat',
+      btnTaken:'Am luat', btnDidnt:'Nu am luat', btnDone:'Am făcut', btnDidntDo:'Nu am făcut', btnChange:'Modifică', editTime:'Modifică ora',
+      histKicker:'Săptămâna aceasta', takenThisWeek:'luate săptămâna asta', ofDoses:'din {n} doze', weekTaken:'din {n} luate săpt. asta', legendTaken:'Luat', legendNot:'Neluat', legendNo:'Fără date', legendNA:'Nu se aplică', tapCorrect:'Apasă orice pătrat pentru a corecta — salvat pentru toată familia.', cancelChanges:'Anulează modificările', saveChanges:'Salvează modificările', viewAll:'Vezi tot istoricul', allHistTitle:'Istoric complet', last30:'Ultimele 30 de zile', weekThis:'Săptămâna asta', weekLast:'Săptămâna trecută', prevWeek:'Săptămâna anterioară', nextWeek:'Săptămâna următoare', close:'Închide', noRecordsWeek:'Nimic programat în această săptămână.', fRepeat:'Repetare', repDaily:'În fiecare zi', repWeekly:'Săptămânal', repMonthly:'Lunar', fDays:'În aceste zile', fDom:'Ziua lunii', fEnd:'Se termină (opțional)', endNever:'Fără sfârșit', endOnDate:'La o dată', endAfter:'După N ori', fEndCount:'Număr de ocazii', endTimes:'ocazii', domLabel:'ziua {n}', until:'până la {date}', untilCount:'{n} ocazii', worthLook:'De verificat', missNot:'neluat', missNo:'fără date',
+      mngKicker:'Configurare', mngTitle:'Gestionare', listOf:'Lista lui {name}', addBtn:'Adaugă', familyMembers:'Membrii familiei', familyNote:'Toți cei conectați la această familie pot vedea și actualiza orice listă.', addMember:'Adaugă un membru', fixTitle:'Corectarea unei greșeli', fixBody:'Deschide Istoric și apasă orice zi pentru a schimba dacă ceva a fost luat.', goHistoryBtn:'Mergi la Istoric', signOut:'Deconectează-te', noList:'Nimic în lista lui {name} încă.', addFirst:'Adaugă primul element',
+      setKicker:'Preferințe', setTitle:'Setări', setLanguage:'Limbă', setTextSize:'Mărimea textului', tsStandard:'Standard', tsLarge:'Mare', tsXL:'Foarte mare', setPhotos:'Arată pozele pastilelor', onWord:'Da', offWord:'Nu',
+      editAdd:'Adaugă în listă', editEdit:'Modifică elementul', fName:'Nume', fType:'Tip', fHowMany:'Câte', fWhen:'Când', fTime:'Ora', fFor:'Pentru ce este (opțional)', fNote:'Notă specială (opțional)', cancel:'Anulează', save:'Salvează', phName:'ex. Metformin sau Exerciții pentru spate', phFor:'ex. Tensiune arterială', phNote:'ex. a se lua cu mâncare', fPhoto:'Poză (opțional)', addPhoto:'Adaugă poză', changePhoto:'Schimbă poza', removePhoto:'Elimină', typeMedicine:'Medicament', typeActivity:'Activitate / sarcină',
+      personAddTitle:'Adaugă un membru', personAddSub:'Va apărea în selector cu o listă goală pe care o poți completa.', fRelationship:'Relație', addPersonBtn:'Adaugă', phPersonName:'ex. Eleanor', phRelationship:'ex. Mama', personEditTitle:'Modifică membrul', savePersonBtn:'Salvează', editPerson:'Modifică',
+      groupMorning:'Dimineață', groupNoon:'Prânz', groupEvening:'Seară', groupBedtime:'Culcare',
+    },
 };
+// app-only extras not in the handoff STR:
+window.STR.en.brand='Alongside'; window.STR.en.orDivider='or'; window.STR.en.googleBtn='Continue with Google'; window.STR.en.people='People'; window.STR.en.noPeople='No people yet. Add them from the admin page.'; window.STR.en.comingSoon='Coming soon — building this section.'; window.STR.en.admin='Admin';
+window.STR.ro.brand='Alongside'; window.STR.ro.orDivider='sau'; window.STR.ro.googleBtn='Continuă cu Google'; window.STR.ro.people='Persoane'; window.STR.ro.noPeople='Nicio persoană încă. Adaug-o din pagina de administrare.'; window.STR.ro.comingSoon='În curând — construim această secțiune.'; window.STR.ro.admin='Administrare';
