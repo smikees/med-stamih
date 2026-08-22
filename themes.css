@@ -1,0 +1,163 @@
+/* themes.css — colour themes + dark variants. JS sets html[data-theme] + html[data-mode="light|dark"]. Base :root in styles.css = organic light. */
+
+html[data-mode="dark"][data-theme="organic"] {
+  --color-bg:#201e1d; --color-surface:#2b2823; --color-text:#f2e7d6; --color-divider:rgba(242,231,214,.16);
+  --color-accent:#f6a06b; --color-accent-2:#8fa073;
+  --color-neutral-100:#2e2b25;
+  --color-neutral-200:#474238;
+  --color-neutral-300:#645c50;
+  --color-neutral-400:#82796a;
+  --color-neutral-500:#a19786;
+  --color-neutral-600:#c0b6a5;
+  --color-neutral-700:#dcd3c4;
+  --color-neutral-800:#eee7db;
+  --color-neutral-900:#f9f4ed;
+  --color-accent-100:#402310;
+  --color-accent-200:#643312;
+  --color-accent-300:#8c491a;
+  --color-accent-400:#b2622d;
+  --color-accent-500:#d67f48;
+  --color-accent-600:#f6a06b;
+  --color-accent-700:#ffc6a5;
+  --color-accent-800:#ffe1d0;
+  --color-accent-900:#fff2eb;
+  --color-accent-2-100:#272e1b;
+  --color-accent-2-200:#3d472b;
+  --color-accent-2-300:#56633f;
+  --color-accent-2-400:#728157;
+  --color-accent-2-500:#8fa073;
+  --color-accent-2-600:#aebf92;
+  --color-accent-2-700:#ccdbb2;
+  --color-accent-2-800:#e1eecc;
+  --color-accent-2-900:#f0fae1;
+}
+
+html[data-theme="ocean"] {
+  --color-bg:#eef3f6; --color-surface:#dfe8ee; --color-text:#182126; --color-divider:rgba(24,33,38,.14);
+  --color-accent:#3b85ba; --color-accent-2:#76bcb9;
+  --color-neutral-100:#f4f5f6;
+  --color-neutral-200:#e8ebed;
+  --color-neutral-300:#ced4d9;
+  --color-neutral-400:#afb8c0;
+  --color-neutral-500:#8d9aa5;
+  --color-neutral-600:#6c7b89;
+  --color-neutral-700:#535f6a;
+  --color-neutral-800:#3a434a;
+  --color-neutral-900:#262c31;
+  --color-accent-100:#eff6fa;
+  --color-accent-200:#e0ecf5;
+  --color-accent-300:#bdd7ea;
+  --color-accent-400:#92bedd;
+  --color-accent-500:#64a2ce;
+  --color-accent-600:#3b85ba;
+  --color-accent-700:#2d678f;
+  --color-accent-800:#204865;
+  --color-accent-900:#152f42;
+  --color-accent-2-100:#f1f8f8;
+  --color-accent-2-200:#e4f2f1;
+  --color-accent-2-300:#c5e2e1;
+  --color-accent-2-400:#9fd0ce;
+  --color-accent-2-500:#76bcb9;
+  --color-accent-2-600:#51a4a1;
+  --color-accent-2-700:#3e7e7c;
+  --color-accent-2-800:#2c5957;
+  --color-accent-2-900:#1d3a39;
+}
+
+html[data-mode="dark"][data-theme="ocean"] {
+  --color-bg:#121a1f; --color-surface:#1e272d; --color-text:#e6eef3; --color-divider:rgba(230,238,243,.15);
+  --color-accent:#92bedd; --color-accent-2:#76bcb9;
+  --color-neutral-100:#262c31;
+  --color-neutral-200:#3a434a;
+  --color-neutral-300:#535f6a;
+  --color-neutral-400:#6c7b89;
+  --color-neutral-500:#8d9aa5;
+  --color-neutral-600:#afb8c0;
+  --color-neutral-700:#ced4d9;
+  --color-neutral-800:#e8ebed;
+  --color-neutral-900:#f4f5f6;
+  --color-accent-100:#152f42;
+  --color-accent-200:#204865;
+  --color-accent-300:#2d678f;
+  --color-accent-400:#3b85ba;
+  --color-accent-500:#64a2ce;
+  --color-accent-600:#92bedd;
+  --color-accent-700:#bdd7ea;
+  --color-accent-800:#e0ecf5;
+  --color-accent-900:#eff6fa;
+  --color-accent-2-100:#1d3a39;
+  --color-accent-2-200:#2c5957;
+  --color-accent-2-300:#3e7e7c;
+  --color-accent-2-400:#51a4a1;
+  --color-accent-2-500:#76bcb9;
+  --color-accent-2-600:#9fd0ce;
+  --color-accent-2-700:#c5e2e1;
+  --color-accent-2-800:#e4f2f1;
+  --color-accent-2-900:#f1f8f8;
+}
+
+html[data-theme="lavender"] {
+  --color-bg:#f3f0f7; --color-surface:#e7e1ef; --color-text:#201c28; --color-divider:rgba(32,28,40,.14);
+  --color-accent:#7d4ea6; --color-accent-2:#7eb499;
+  --color-neutral-100:#f5f4f6;
+  --color-neutral-200:#ece9ec;
+  --color-neutral-300:#d6d0d8;
+  --color-neutral-400:#bbb1be;
+  --color-neutral-500:#9e90a2;
+  --color-neutral-600:#806f85;
+  --color-neutral-700:#635667;
+  --color-neutral-800:#453c48;
+  --color-neutral-900:#2d272f;
+  --color-accent-100:#f5f1f8;
+  --color-accent-200:#ebe3f2;
+  --color-accent-300:#d5c4e3;
+  --color-accent-400:#b99ed1;
+  --color-accent-500:#9b74be;
+  --color-accent-600:#7d4ea6;
+  --color-accent-700:#613c80;
+  --color-accent-800:#442a5a;
+  --color-accent-900:#2c1c3b;
+  --color-accent-2-100:#f2f7f5;
+  --color-accent-2-200:#e5f0eb;
+  --color-accent-2-300:#c8dfd4;
+  --color-accent-2-400:#a5cab8;
+  --color-accent-2-500:#7eb499;
+  --color-accent-2-600:#5b9a7a;
+  --color-accent-2-700:#46775e;
+  --color-accent-2-800:#315442;
+  --color-accent-2-900:#20372b;
+}
+
+html[data-mode="dark"][data-theme="lavender"] {
+  --color-bg:#16131c; --color-surface:#221d2b; --color-text:#ece7f3; --color-divider:rgba(236,231,243,.15);
+  --color-accent:#b99ed1; --color-accent-2:#7eb499;
+  --color-neutral-100:#2d272f;
+  --color-neutral-200:#453c48;
+  --color-neutral-300:#635667;
+  --color-neutral-400:#806f85;
+  --color-neutral-500:#9e90a2;
+  --color-neutral-600:#bbb1be;
+  --color-neutral-700:#d6d0d8;
+  --color-neutral-800:#ece9ec;
+  --color-neutral-900:#f5f4f6;
+  --color-accent-100:#2c1c3b;
+  --color-accent-200:#442a5a;
+  --color-accent-300:#613c80;
+  --color-accent-400:#7d4ea6;
+  --color-accent-500:#9b74be;
+  --color-accent-600:#b99ed1;
+  --color-accent-700:#d5c4e3;
+  --color-accent-800:#ebe3f2;
+  --color-accent-900:#f5f1f8;
+  --color-accent-2-100:#20372b;
+  --color-accent-2-200:#315442;
+  --color-accent-2-300:#46775e;
+  --color-accent-2-400:#5b9a7a;
+  --color-accent-2-500:#7eb499;
+  --color-accent-2-600:#a5cab8;
+  --color-accent-2-700:#c8dfd4;
+  --color-accent-2-800:#e5f0eb;
+  --color-accent-2-900:#f2f7f5;
+}
+
+html[data-mode="dark"]{--shadow-sm:0 1px 2px rgba(0,0,0,.45);--shadow-md:0 3px 10px rgba(0,0,0,.5);--shadow-lg:0 12px 32px rgba(0,0,0,.55);}

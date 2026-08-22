@@ -125,3 +125,6 @@ ALTER TABLE notif_log MODIFY response ENUM('taken','skipped','snooze') DEFAULT N
 
 -- allow fractional doses (0.25 = a quarter, 0.5 = a half); idempotent to re-run.
 ALTER TABLE items MODIFY count DECIMAL(4,2) NOT NULL DEFAULT 1;
+
+-- "every N days" interval for daily items (1 = every day); idempotent via IF NOT EXISTS.
+ALTER TABLE items ADD COLUMN IF NOT EXISTS every_days INT NOT NULL DEFAULT 1 AFTER freq;

@@ -137,7 +137,7 @@ html[lang="ro"] { --font-heading: 'Baloo 2', system-ui, sans-serif; --font-headi
 .dialog { position: relative; z-index: 1001; max-height: 90vh; overflow-y: auto; width: min(440px, 100%); }
 .dialog-title { font-size: 1.5em; margin-bottom: 4px; }
 /* lighter, higher-contrast input fill (design surface was too close to the page) */
-.input, select.input, textarea.input { background: #fffdf7; }
+.input, select.input, textarea.input { background: var(--color-neutral-100); color: var(--color-text); }
 /* tighter container corners (~10-12px per request); pills/chips/inputs stay round */
 .card, .dialog { border-radius: 12px; }
 .card.itemcard, .card.summary { border-radius: 12px; }
@@ -155,7 +155,7 @@ html[lang="ro"] { --font-heading: 'Baloo 2', system-ui, sans-serif; --font-headi
 @media (prefers-reduced-motion: reduce) { .sk::after { animation: none; } }
 
 /* transient toast (e.g. "reminder sent") */
-.toast { position: fixed; left: 50%; bottom: calc(78px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 12px); z-index: 1200; max-width: 90vw; padding: 11px 18px; border-radius: 12px; background: var(--color-neutral-900, #2c2622); color: #fff; font-weight: 600; font-size: .95em; box-shadow: 0 8px 24px rgba(0,0,0,.22); opacity: 0; pointer-events: none; transition: opacity .25s ease, transform .25s ease; }
+.toast { position: fixed; left: 50%; bottom: calc(78px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 12px); z-index: 1200; max-width: 90vw; padding: 11px 18px; border-radius: 12px; background: #2c2622; color: #fff; font-weight: 600; font-size: .95em; box-shadow: 0 8px 24px rgba(0,0,0,.22); opacity: 0; pointer-events: none; transition: opacity .25s ease, transform .25s ease; }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
 /* item photo picker (editor) — preview + buttons on one row */

@@ -8,10 +8,14 @@ function item_scheduled_on(array $item, DateTime $date): bool {
         if ($date > $end) return false;
     }
     $f = $item['freq'] ?: 'daily';
-    $occurs = function (DateTime $d) use ($item, $f): bool {
+    $every = max(1, (int)($item['every_days'] ?? 1));
+    $start = !empty($item['start_date']) ? new DateTime($item['start_date'] . ' 00:00:00', $date->getTimezone()) : null;
+    $occurs = function (DateTime $d) use ($item, $f, $every, $start): bool {
         if ($f === 'weekly') { $days = json_decode($item['days'] ?: '[]', true) ?: []; return in_array((int)$d->format('w'), array_map('intval', $days), true); }
         if ($f === 'monthly') { return (int)$d->format('j') === (int)($item['dom'] ?: 1); }
-        return true;
+        if ($every <= 1 || !$start) return true;
+        $diff = (int)floor(($d->getTimestamp() - $start->getTimestamp()) / 86400);
+        return $diff >= 0 && $diff % $every === 0;
     };
     if (!$occurs($date)) return false;
     if ($mode === 'count' && !empty($item['start_date'])) {

@@ -13,6 +13,8 @@
     user: null, csrf: '',
     lang: localStorage.getItem('med_lang') || 'ro',
     textSize: localStorage.getItem('med_text') || 'Large',
+    theme: localStorage.getItem('med_theme') || 'organic',
+    mode: localStorage.getItem('med_mode') || 'light',   // light | dark | device
     showPhotos: localStorage.getItem('med_photos') !== '0',
     tab: 'today',
     profiles: [], sel: null, manageSel: null,
@@ -49,11 +51,15 @@
     return 'lui ' + n;                                       // male / indeclinable
   }
   function pGen(name) { return state.lang === 'ro' ? roGenitive(name) : name; }
+  function effMode() { return state.mode === 'device' ? (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : state.mode; }
   function applyPrefs() {
     const root = SIZES[state.textSize] || 19;
-    document.documentElement.style.fontSize = root + 'px';                 // scales rem
+    const de = document.documentElement;
+    de.style.fontSize = root + 'px';                 // scales rem
     document.body.style.fontSize = (root * 15 / 19).toFixed(1) + 'px';     // body drives em/inherited text (Large=15px)
-    document.documentElement.lang = state.lang;
+    de.lang = state.lang;
+    de.dataset.theme = state.theme;
+    de.dataset.mode = effMode();
   }
   function personName(p) { return p ? p.name : ''; }
   function tintFor(p, i) { return (p && p.tint) || TINTS[i % TINTS.length]; }
@@ -71,7 +77,7 @@
   function normItem(r) {
     return { id: r.id, type: r.type, name: r.name, count: r.count, group: r.grp, time: r.time_min,
       purpose: r.purpose, note: r.note, photo: r.photo_url, freq: r.freq, days: r.days || [], dom: r.dom,
-      endMode: r.end_mode, endDate: r.end_date, endCount: r.end_count, startDate: r.start_date };
+      endMode: r.end_mode, endDate: r.end_date, endCount: r.end_count, startDate: r.start_date, everyDays: r.every_days || 1 };
   }
 
   /* ---------------- data ---------------- */
@@ -368,7 +374,15 @@
     wrap.append(el('button', { class: 'btn btn-secondary btn-block', style: 'margin-top:6px', onclick: () => openPerson(null), html: M.icon('plus', 18, 'currentColor', 2.6) + ' ' + esc(t('addMember')) }));
     return wrap;
   }
-  function openPerson(pf, focusShare) { state.personDlg = pf ? { id: pf.id, name: pf.name, relation: pf.relation, timezone: pf.timezone, role: pf.role, members: undefined, _focusShare: !!focusShare } : { isNew: true, name: '', relation: '' }; if (pf && pf.role === 'owner') loadMembers(pf.id); renderPerson(); }
+  const TZS = [['Europe/Bucharest', 'București'], ['Europe/Chisinau', 'Chișinău'], ['Europe/Madrid', 'Madrid'], ['Europe/London', 'London'], ['Europe/Paris', 'Paris'], ['Europe/Berlin', 'Berlin'], ['Europe/Rome', 'Roma'], ['Europe/Athens', 'Atena'], ['America/New_York', 'New York'], ['America/Chicago', 'Chicago'], ['America/Los_Angeles', 'Los Angeles'], ['Asia/Jerusalem', 'Ierusalim']];
+  function tzSelect(e) {
+    const s = el('select', { class: 'input' }); const cur = e.timezone || 'Europe/Bucharest';
+    const list = TZS.slice(); if (!list.some(x => x[0] === cur)) list.unshift([cur, cur]);
+    list.forEach(([v, lab]) => s.append(el('option', { value: v, selected: v === cur ? 'selected' : null }, lab)));
+    s.addEventListener('change', () => e.timezone = s.value);
+    return s;
+  }
+  function openPerson(pf, focusShare) { state.personDlg = pf ? { id: pf.id, name: pf.name, relation: pf.relation, timezone: pf.timezone, role: pf.role, members: undefined, _focusShare: !!focusShare } : { isNew: true, name: '', relation: '', timezone: state.lang === 'ro' ? 'Europe/Bucharest' : 'Europe/Madrid' }; if (pf && pf.role === 'owner') loadMembers(pf.id); renderPerson(); }
   function closePerson() { state.personDlg = null; removeDialogs(); }
   async function loadMembers(pid) { try { const r = await api('/api/profiles.php?action=members&profile=' + pid); if (state.personDlg && state.personDlg.id === pid) { state.personDlg.members = r.members || []; renderPerson(); } } catch (e) { if (state.personDlg && state.personDlg.id === pid) { state.personDlg.members = []; renderPerson(); } } }
   async function shareAdd(email) { email = (email || '').trim().toLowerCase(); if (!email) return; try { await api('/api/profiles.php?action=share', { method: 'POST', body: { id: state.personDlg.id, email } }); toast(t('shareAdded')); await loadMembers(state.personDlg.id); } catch (e) { toast(t('shareNoUser')); } }
@@ -398,13 +412,14 @@
       el('div', { class: 'dialog-body' },
         el('div', { class: 'field' }, el('label', {}, t('fName')), nameI),
         el('div', { class: 'field' }, el('label', {}, t('fRelationship')), relI),
+        el('div', { class: 'field' }, el('label', {}, t('fTimezone')), tzSelect(e)),
         (!e.isNew && e.role === 'owner') ? shareSection(e) : null),
       el('div', { class: 'dialog-actions' },
         el('button', { class: 'btn btn-secondary', onclick: closePerson }, t('cancel')),
         el('button', { class: 'btn btn-primary', onclick: async () => {
           const name = nameI.value.trim(); if (!name) { nameI.focus(); return; }
           const relation = relI.value.trim();
-          if (e.isNew) { const r = await api('/api/profiles.php?action=create', { method: 'POST', body: { name, relation } }); state.personDlg = null; removeDialogs(); await loadProfiles(); state.manageSel = r.id; state.sel = r.id; loadedFor = null; render(); }
+          if (e.isNew) { const r = await api('/api/profiles.php?action=create', { method: 'POST', body: { name, relation, timezone: e.timezone } }); state.personDlg = null; removeDialogs(); await loadProfiles(); state.manageSel = r.id; state.sel = r.id; loadedFor = null; render(); }
           else { await api('/api/profiles.php?action=rename', { method: 'POST', body: { id: e.id, name, relation, timezone: e.timezone || 'Europe/Bucharest' } }); state.personDlg = null; removeDialogs(); await loadProfiles(); render(); }
         } }, t(e.isNew ? 'addPersonBtn' : 'savePersonBtn'))));
     bd.append(dc); document.body.append(bd);
@@ -422,6 +437,7 @@
     const parts = []; const f = it.freq || 'daily';
     if (f === 'weekly') { const names = (it.days || []).slice().sort((a, b) => a - b).map(d => M.wdShort(d, state.lang)).join(', '); parts.push(t('repWeekly') + (names ? ' · ' + names : '')); }
     else if (f === 'monthly') parts.push(t('repMonthly') + ' · ' + fmt('domLabel', { n: it.dom || 1 }));
+    else if (f === 'daily' && (it.everyDays || 1) > 1) parts.push(fmt('everyDays', { n: it.everyDays }));
     if (it.endMode === 'date' && it.endDate) parts.push(fmt('until', { date: M.shortDate(it.endDate, state.lang) }));
     if (it.endMode === 'count' && it.endCount) parts.push(fmt('untilCount', { n: it.endCount }));
     return parts.join(' · ');
@@ -546,6 +562,7 @@
         el('div', { class: 'grid2' }, field('fType', typeS), el('div', { class: 'field' }, el('label', {}, t('fHowMany')), countI, el('div', { class: 'field-hint muted' }, t('qtyHint')))),
         field('fTime', timeS),
         field('fRepeat', repeatS),
+        e.freq === 'daily' ? field('fEvery', everyDaysControl(e)) : null,
         e.freq === 'weekly' ? field('fDays', dayToggles(e)) : null,
         e.freq === 'monthly' ? field('fDom', domSelect(e)) : null,
         field('fEnd', endControls(e)),
@@ -559,7 +576,7 @@
           e.count = parseQty(countI.value); e.time = parseInt(timeS.value, 10);
           const body = { profile_id: pid, type: e.type, name: e.name, count: e.count, grp: M.groupForMin(e.time), time_min: e.time,
             purpose: purposeI.value.trim(), note: noteI.value.trim(), freq: e.freq, days: e.days, dom: e.dom,
-            end_mode: e.endMode, end_date: e.endDate, end_count: e.endCount, photo_url: e.photo };
+            end_mode: e.endMode, end_date: e.endDate, end_count: e.endCount, every_days: e.freq === 'daily' ? (e.everyDays || 1) : 1, photo_url: e.photo };
           if (e.isNew) await api('/api/items.php?action=create', { method: 'POST', body });
           else await api('/api/items.php?action=update', { method: 'POST', body: Object.assign({ id: e.id }, body) });
           state.editItem = null; removeDialogs(); await loadDay(pid); render();
@@ -567,6 +584,10 @@
     bd.append(dc); document.body.append(bd);
   }
   function sel(vals, labels, cur, on) { const s = el('select', { class: 'input' }); vals.forEach((v, i) => s.append(el('option', { value: v, selected: v === cur ? 'selected' : null }, labels[i]))); s.addEventListener('change', () => on(s.value)); return s; }
+  function everyDaysControl(e) {
+    const inp = el('input', { class: 'input', type: 'number', min: 1, value: e.everyDays || 1, style: 'max-width:90px', onchange: (ev) => e.everyDays = Math.max(1, parseInt(ev.target.value, 10) || 1) });
+    return el('div', { style: 'display:flex;align-items:center;gap:8px' }, inp, el('span', {}, t('daysWord')));
+  }
   function dayToggles(e) { const row = el('div', { class: 'daytoggles' }); for (let d = 0; d < 7; d++) { const on = (e.days || []).includes(d); row.append(el('button', { class: 'btn ' + (on ? 'btn-primary' : 'btn-secondary') + ' small', onclick: () => { e.days = on ? e.days.filter(x => x !== d) : [...(e.days || []), d]; renderEditor(); } }, M.wdChip(d, state.lang))); } return row; }
   function domSelect(e) { const s = el('select', { class: 'input' }); for (let d = 1; d <= 31; d++) s.append(el('option', { value: d, selected: (e.dom || 1) === d ? 'selected' : null }, d)); s.addEventListener('change', () => e.dom = parseInt(s.value, 10)); return s; }
   function endControls(e) {
@@ -589,6 +610,8 @@
       seg(M.icon('globe', 18) + ' ' + t('setLanguage'), [['ro', 'Română'], ['en', 'English']], state.lang, v => { state.lang = v; localStorage.setItem('med_lang', v); render(); }),
       seg(t('setTextSize'), [['Standard', t('tsStandard')], ['Large', t('tsLarge')], ['Extra large', t('tsXL')]], state.textSize, v => { state.textSize = v; localStorage.setItem('med_text', v); render(); }),
       seg(t('setPhotos'), [[true, t('onWord')], [false, t('offWord')]], state.showPhotos, v => { state.showPhotos = v; localStorage.setItem('med_photos', v ? '1' : '0'); render(); }),
+      seg(M.icon('image', 18) + ' ' + t('setTheme'), [['organic', t('themeOrganic')], ['ocean', t('themeOcean')], ['lavender', t('themeLavender')]], state.theme, v => { state.theme = v; localStorage.setItem('med_theme', v); render(); }),
+      seg(t('setMode'), [['light', t('modeLight')], ['dark', t('modeDark')], ['device', t('modeDevice')]], state.mode, v => { state.mode = v; localStorage.setItem('med_mode', v); render(); }),
     );
     if (state.sel) {
       if (!state.exportSel || !state.profiles.some(p => p.id === state.exportSel)) state.exportSel = state.sel;
@@ -815,5 +838,6 @@
     } catch (e) {}
   }
   setInterval(pollTick, 30000);
+  try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (state.mode === 'device') applyPrefs(); }); } catch (e) {}
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
 })();

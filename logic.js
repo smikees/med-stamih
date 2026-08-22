@@ -61,7 +61,10 @@
     const mode = item.endMode || (item.endDate ? 'date' : 'never');
     if (mode === 'date' && item.endDate) { const end = new Date(item.endDate + 'T23:59:59'); if (!isNaN(end) && date > end) return false; }
     const f = item.freq || 'daily';
-    const occurs = (d) => f === 'weekly' ? (Array.isArray(item.days) && item.days.indexOf(d.getDay()) >= 0) : f === 'monthly' ? (d.getDate() === (item.dom || 1)) : true;
+    const every = Math.max(1, parseInt(item.everyDays, 10) || 1);
+    const start = item.startDate ? new Date(item.startDate + 'T00:00:00') : null;
+    const dailyHit = (d) => { if (every <= 1 || !start || isNaN(start)) return true; const diff = Math.round((d - start) / 86400000); return diff >= 0 && diff % every === 0; };
+    const occurs = (d) => f === 'weekly' ? (Array.isArray(item.days) && item.days.indexOf(d.getDay()) >= 0) : f === 'monthly' ? (d.getDate() === (item.dom || 1)) : dailyHit(d);
     if (!occurs(date)) return false;
     if (mode === 'count' && item.startDate) {
       const start = new Date(item.startDate + 'T00:00:00');
