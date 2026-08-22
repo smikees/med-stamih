@@ -317,6 +317,7 @@
     screen.append(c);
   }
   /* ---- Notifications (Telegram) ---- */
+  const TG_LOGO = '<svg viewBox="0 0 240 240" width="26" height="26" aria-hidden="true"><circle cx="120" cy="120" r="120" fill="#229ED9"/><path fill="#fff" d="M53 118l122-47c6-2 11 1 9 10l-21 98c-1 6-5 8-10 5l-28-21-13 13c-2 2-3 3-6 3l2-30 55-50c2-2 0-3-3-1l-68 43-29-9c-6-2-6-6 1-9z"/></svg>';
   function notifSection(pid) {
     const wrap = el('div', { style: 'margin-top:22px' });
     wrap.append(el('h2', { class: 'display', style: 'font-size:1.12em;margin:0 0 4px' }, t('notifTitle')),
@@ -325,11 +326,11 @@
     if (chans === undefined) { fetchChannels(pid); wrap.append(el('div', { class: 'sk', style: 'height:56px' })); return wrap; }
     if (!chans.length) wrap.append(el('p', { class: 'muted', style: 'margin:0 0 8px' }, t('notifNone')));
     chans.forEach(ch => wrap.append(el('div', { class: 'mrow' },
-      el('span', { class: 'pavatar', style: 'background:var(--color-accent-2-600);font-size:1.1em' }, '✈'),
+      el('span', { class: 'tg-logo', html: TG_LOGO }),
       el('div', { style: 'flex:1;min-width:0' }, el('div', { style: 'font-weight:700' }, ch.label || 'Telegram'), el('div', { class: 'meta' }, ch.verified ? t('verifiedWord') : t('pendingWord'))),
       el('button', { class: 'btn btn-secondary btn-icon', 'aria-label': t('unlinkWord'), onclick: () => unlinkChan(pid, ch.id), html: M.icon('trash', 18) }))));
     if (chans.filter(c => c.verified).length < 3)
-      wrap.append(el('button', { class: 'btn btn-secondary btn-block', style: 'margin-top:6px', onclick: () => linkTelegram(pid), html: '✈ ' + esc(t('linkTelegram')) }));
+      wrap.append(el('button', { class: 'btn btn-secondary btn-block tg-btn', style: 'margin-top:6px', onclick: () => linkTelegram(pid), html: TG_LOGO + ' ' + esc(t('linkTelegram')) }));
     return wrap;
   }
   async function fetchChannels(pid) { try { const r = await api('/api/channels.php?action=list&profile=' + pid); chanCache[pid] = r.channels || []; if (state.tab === 'manage') render(); } catch (e) { chanCache[pid] = []; } }
@@ -509,8 +510,10 @@
     const wrap = el('div', { class: 'photo-pick' });
     const fileI = el('input', { type: 'file', accept: 'image/*', style: 'display:none' });
     const cur = e.photoPreview || photoSrc(e);
+    const tcol = e.type === 'activity' ? 'var(--color-accent-2-700)' : 'var(--color-accent-700)';   // match Today's image border
     const prev = el('div', { class: 'photo-prev' + (cur ? '' : ' empty') });
-    if (cur) { prev.style.backgroundImage = 'url(' + cur + ')'; } else { prev.innerHTML = M.icon('image', 30, 'var(--color-neutral-400, #b8ab9c)', 2); }
+    if (cur) { prev.style.backgroundImage = 'url(' + cur + ')'; prev.style.border = '2.5px solid ' + tcol; }
+    else { prev.style.border = '2px dashed ' + tcol; prev.innerHTML = M.icon('image', 30, tcol, 2); }
     prev.onclick = () => fileI.click();
     fileI.addEventListener('change', async () => {
       const f = fileI.files[0]; if (!f) return;
