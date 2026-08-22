@@ -32,7 +32,7 @@ foreach ($profs as $p) {
     $chs->execute([$pid]); $chats = array_column($chs->fetchAll(), 'address');
     if (!$chats) continue;
 
-    $items = $pdo->prepare('SELECT * FROM items WHERE profile_id=? AND active=1'); $items->execute([$pid]); $items = $items->fetchAll();
+    $items = $pdo->prepare('SELECT *, UNIX_TIMESTAMP(created_at) AS created_ts FROM items WHERE profile_id=? AND active=1'); $items->execute([$pid]); $items = $items->fetchAll();
     $lg = $pdo->prepare('SELECT item_id,status FROM logs WHERE profile_id=? AND d=?'); $lg->execute([$pid, $dateISO]);
     $logs = []; foreach ($lg->fetchAll() as $r) $logs[(int)$r['item_id']] = $r['status'];
     $nf = $pdo->prepare('SELECT item_id,kind,response,UNIX_TIMESTAMP(sent_at) ts FROM notif_log WHERE profile_id=? AND d=?'); $nf->execute([$pid, $dateISO]);
@@ -42,6 +42,9 @@ foreach ($profs as $p) {
         if (!item_scheduled_on($it, $now)) continue;
         $iid = (int)$it['id']; $tm = (int)$it['time_min'];
         if (isset($logs[$iid])) continue;   // already logged → no reminder
+        // don't back-fire for items added after today's scheduled time already passed
+        $schedEpoch = (clone $now)->setTime(intdiv($tm, 60), $tm % 60, 0)->getTimestamp();
+        if ($schedEpoch < (int)($it['created_ts'] ?? 0)) continue;
         $due = $notif['due|' . $iid] ?? null;
         $snoozeActive = $due && $due['response'] === 'snooze' && (time() - $due['ts'] < 15 * 60);
         $snoozeExpired = $due && $due['response'] === 'snooze' && (time() - $due['ts'] >= 15 * 60);
